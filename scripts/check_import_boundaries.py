@@ -95,6 +95,11 @@ IMPORT_RULES = (
         (*_ADAPTERS, "nanobot.agent"),
     ),
     ImportRule(
+        "career-domain",
+        ("nanobot.career",),
+        (*_ADAPTERS, "nanobot.agent"),
+    ),
+    ImportRule(
         "security-primitives",
         ("nanobot.security",),
         (*_ADAPTERS, "nanobot.agent", "nanobot.session"),

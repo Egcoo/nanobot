@@ -105,6 +105,7 @@ def test_core_boundary_includes_type_dependencies(source: str) -> None:
     [
         ("nanobot.session.manager", "session-storage"),
         ("nanobot.session.recovery", "session-storage"),
+        ("nanobot.career.service", "career-domain"),
         ("nanobot.security.workspace_policy", "security-primitives"),
         ("nanobot.agent.turn_delivery", "core-execution"),
         ("nanobot.channels.notification_routes", "channel-routing-contracts"),
