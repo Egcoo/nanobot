@@ -105,6 +105,7 @@ import {
   toRuntimeSurface,
 } from "@/lib/runtime";
 import { projectNameFromPath, scopeWithAccessMode } from "@/lib/workspace";
+import type { CareerSelection } from "@/lib/career-types";
 import {
   createTemporaryChatSession,
   deriveTemporaryChatTitle,
@@ -145,13 +146,17 @@ const TOKEN_REFRESH_MIN_DELAY_MS = 5_000;
 const PAIRING_POLL_INTERVAL_MS = 5_000;
 const PAIRING_IDLE_POLL_INTERVAL_MS = 15_000;
 const PAIRING_DISMISS_SNOOZE_MS = 30_000;
-type ShellView = "chat" | "settings" | "apps" | "automations" | "skills" | "channels" | "remote";
+type ShellView = "chat" | "career" | "settings" | "apps" | "automations" | "skills" | "channels" | "remote";
 type ShellRoute = {
   view: ShellView;
   activeKey: string | null;
   settingsSection: SettingsSectionKey;
   temporary?: boolean;
+  careerSelection?: CareerSelection;
 };
+const CareerWorkbench = lazy(() => import("@/components/career/CareerWorkbench").then(
+  (module) => ({ default: module.CareerWorkbench }),
+));
 const loadThreadShell = () => import("@/components/thread/ThreadShell");
 const ThreadShell = lazy(() => loadThreadShell().then(
   (module) => ({ default: module.ThreadShell }),
@@ -279,6 +284,10 @@ function readShellRoute(): ShellRoute {
   if (path === "/apps") {
     return { view: "apps", activeKey, temporary, settingsSection: "apps" };
   }
+  if (path === "/career") {
+    return { view: "career", activeKey, temporary, settingsSection: "overview",
+      careerSelection: { workspaceRef: params.get("workspace") ?? "", threadId: params.get("preparation") ?? "" } };
+  }
   if (path === "/automations") {
     return { view: "automations", activeKey, temporary, settingsSection: "automations" };
   }
@@ -332,6 +341,10 @@ function shellRouteHash(route: ShellRoute): string {
       : "#/new";
   }
   const params = new URLSearchParams();
+  if (route.view === "career") {
+    if (route.careerSelection?.workspaceRef) params.set("workspace", route.careerSelection.workspaceRef);
+    if (route.careerSelection?.threadId) params.set("preparation", route.careerSelection.threadId);
+  }
   if (route.view === "settings" && route.settingsSection !== "overview") {
     params.set("section", route.settingsSection);
   }
@@ -1222,6 +1235,9 @@ function Shell({
     initialRouteRef.current.activeKey,
   );
   const [view, setView] = useState<ShellView>(initialRouteRef.current.view);
+  const [careerSelection, setCareerSelection] = useState<CareerSelection>(
+    initialRouteRef.current.careerSelection ?? { workspaceRef: "", threadId: "" },
+  );
   const [chatVisited, setChatVisited] = useState(initialRouteRef.current.view === "chat");
   useEffect(() => {
     if (view === "chat") setChatVisited(true);
@@ -1304,7 +1320,7 @@ function Shell({
   const settingsExitGuardRef = useRef<SettingsExitGuard | null>(null);
   const currentShellRouteRef = useRef<ShellRoute>({ view, activeKey, settingsSection: settingsInitialSection });
   currentShellRouteRef.current = {
-    view, activeKey, settingsSection: settingsInitialSection,
+    view, activeKey, settingsSection: settingsInitialSection, careerSelection,
     temporary: Boolean(activeKey && temporarySessions[activeKey]),
   };
   const registerSettingsExitGuard = useCallback((guard: SettingsExitGuard | null) => {
@@ -1363,6 +1379,7 @@ function Shell({
     if (remoteConnectionsRef.current?.managing) remoteConnectionsRef.current.closeManagement();
     setActiveKey(route.activeKey);
     setView(route.view);
+    if (route.careerSelection) setCareerSelection(route.careerSelection);
     setSettingsInitialSection(route.settingsSection);
     writeShellRoute({
       ...route,
@@ -1390,6 +1407,7 @@ function Shell({
         settingsExitGuardRef.current(() => {
           setActiveKey(route.activeKey);
           setView(route.view);
+          if (route.careerSelection) setCareerSelection(route.careerSelection);
           setSettingsInitialSection(route.settingsSection);
           writeShellRoute(route, true);
           setWorkspaceError(null);
@@ -1399,6 +1417,7 @@ function Shell({
       }
       setActiveKey(route.activeKey);
       setView(route.view);
+      if (route.careerSelection) setCareerSelection(route.careerSelection);
       setSettingsInitialSection(route.settingsSection);
       setWorkspaceError(null);
       if (route.view === "chat" && !route.activeKey) {
@@ -2174,6 +2193,12 @@ function Shell({
     setMobileSidebarOpen(false);
   }, [activeKey, navigate]);
 
+  const onOpenCareer = useCallback(() => {
+    setSessionSearchOpen(false);
+    navigate({ view: "career", activeKey, settingsSection: "overview", careerSelection });
+    setMobileSidebarOpen(false);
+  }, [activeKey, careerSelection, navigate]);
+
   const onOpenAutomations = useCallback(() => {
     setSessionSearchOpen(false);
     navigate({ view: "automations", activeKey, settingsSection: "automations" });
@@ -2791,12 +2816,13 @@ function Shell({
         installationMethod: updateFlow.pending ? null : versionCheck.installationMethod }
       : undefined,
     onOpenApps,
+    onOpenCareer,
     onOpenAutomations,
     onOpenChannels,
     onOpenSkills,
     onSettingsIntent,
     onOpenSearch: onOpenSessionSearch,
-    activeUtility: !managingConnections && (view === "apps" || view === "automations" || view === "skills" || view === "channels") ? view : null,
+    activeUtility: !managingConnections && (view === "career" || view === "apps" || view === "automations" || view === "skills" || view === "channels") ? view : null,
     onToggleArchived,
     pinnedKeys: sidebarPinnedTabKeys,
     archivedKeys: sidebarArchivedTabKeys,
@@ -3112,7 +3138,11 @@ function Shell({
             </div>}
             {view !== "chat" && (
               <div className="absolute inset-0 flex flex-col">
-                {view === "remote" ? <LazyRemoteConnectionsPage
+                {view === "career" ? <Suspense fallback={<div role="status" className="p-6">{t("career.loading")}</div>}>
+                  <CareerWorkbench selection={careerSelection} onBackToChat={onBackToChat}
+                    onSelectionChange={(selection) => navigate({ view: "career", activeKey,
+                      settingsSection: "overview", careerSelection: selection }, { replace: true })} />
+                </Suspense> : view === "remote" ? <LazyRemoteConnectionsPage
                   mainNavigationExpanded={showMainSidebar && hostSidebarOpen}
                   hostChromeInset={showHostChrome}
                   onBackToChat={onBackToChat}

@@ -57,7 +57,7 @@ import type {
 import { fetchWithTimeout } from "./http";
 import { isSubagentTask } from "./subagent-tasks";
 
-const API_READ_TIMEOUT_MS = 20_000;
+export const API_READ_TIMEOUT_MS = 20_000;
 const API_MUTATION_TIMEOUT_MS = 20_000;
 const PACKAGE_MUTATION_TIMEOUT_MS = 150_000;
 const SLASH_COMMAND_LIFECYCLES = new Set<SlashCommandLifecycle>([
@@ -91,7 +91,7 @@ export interface WebUIMutationTransport {
   ): Promise<T>;
 }
 
-async function request<T>(
+export async function request<T>(
   url: string,
   token: string,
   init?: RequestInit,
@@ -139,7 +139,7 @@ async function request<T>(
   return (await res.json()) as T;
 }
 
-async function mutation<T>(
+export async function mutation<T>(
   transport: WebUIMutationTransport,
   action: string,
   payload: Record<string, unknown> = {},
