@@ -140,12 +140,14 @@ def test_job_reservation_survives_process_exit_until_same_scope_is_recovered(pri
         pass
 
 
-@pytest.mark.parametrize("legacy", [False, True])
-def test_profile_handoff_keeps_delivery_leased_without_expanding_old_grant(private_home, tmp_path, legacy):
+@pytest.mark.parametrize("deferred", [(), ("delivery",), ("career",), ("delivery", "career")])
+def test_profile_handoff_keeps_lazy_stores_leased_without_expanding_old_grant(private_home, tmp_path, deferred):
     selectors = dict(home=private_home, data_dir=tmp_path / "data",
                      config=tmp_path / "data/config.json", workspace=tmp_path / "workspace")
     delivery = selectors["data_dir"] / "delivery"
-    scope = tuple(path for path in profile_data_paths(**selectors) if not legacy or path != delivery)
+    career = selectors["data_dir"] / "career"
+    scope = tuple(path for path in profile_data_paths(**selectors)
+                  if path not in {selectors["data_dir"] / name for name in deferred})
     job_id, participant = str(uuid4()), "a" * 64
     with data_access(scope, updating=True, job_id=job_id) as owner:
         owner.reserve()
@@ -157,12 +159,14 @@ def test_profile_handoff_keeps_delivery_leased_without_expanding_old_grant(priva
             saved = json.loads(owner.reservation_path.read_text())
             assert saved["grants"][participant]["roots"] == sorted(str(path.resolve()).casefold() for path in scope)
             assert not delivery.exists()
+            assert not career.exists()
             owner.release_reservation()
         # Once handoff ends, the running profile still owns the new store lease.
-        with pytest.raises(InstallationBusyError, match="data is in use"):
-            with data_access((delivery,), updating=True):
-                pytest.fail("A delivery store writer escaped the runtime lease")
-    with data_access((delivery,), updating=True):
+        for store in (delivery, career):
+            with pytest.raises(InstallationBusyError, match="data is in use"):
+                with data_access((store,), updating=True):
+                    pytest.fail("A lazy store writer escaped the runtime lease")
+    with data_access((delivery, career), updating=True):
         pass
 
 

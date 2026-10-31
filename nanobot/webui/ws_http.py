@@ -14,6 +14,7 @@ import hashlib
 import json
 import mimetypes
 import re
+import sqlite3
 import time
 from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import dataclass, field
@@ -43,6 +44,7 @@ from nanobot.session.session_handles import (
 from nanobot.triggers.local_types import LocalTrigger
 from nanobot.webui.automation_chats import AutomationChat, automation_chats
 from nanobot.webui.automation_results import cron_run_response, trigger_run_response
+from nanobot.webui.career_api import CAREER_MUTATIONS, CareerAPI
 from nanobot.webui.file_preview import (
     WebUIFilePreviewError,
     file_preview_availability_payload,
@@ -167,6 +169,7 @@ class _WebUIThreadDiagnostics:
     event_loop_lag_ms: float = 0.0
 
 _WEBUI_MUTATION_PATHS = {
+    **{action: f"/api/career/mutate/{action}" for action in CAREER_MUTATIONS},
     "remote.discover": "/api/remote-instances/discover",
     "remote.pair_start": "/api/remote-instances/pair_start",
     "remote.pair_preview": "/api/remote-instances/pair_preview",
@@ -407,6 +410,9 @@ class GatewayHTTPHandler:
         self.media = media
         self.ingress = ingress
         self.workspaces = workspaces
+        self.career = CareerAPI(
+            sessions=session_manager, workspaces=workspaces, data_dir=settings.config.path.parent,
+        )
         self.settings = settings
         from nanobot.webui.remote_instances import RemoteInstances
 
@@ -534,6 +540,8 @@ class GatewayHTTPHandler:
         return _http_error(404, "WebUI mutation action not found")
 
     def _is_webui_mutation_path(self, path: str) -> bool:
+        if path.startswith("/api/career/mutate/"):
+            return True
         if path.startswith("/api/remote-instances/"):
             return True
         if self.settings_routes.is_mutation_path(path):
@@ -586,6 +594,8 @@ class GatewayHTTPHandler:
         request: WsRequest,
         got: str,
     ) -> Any | None:
+        if got == "/api/career/workspaces" or got == "/api/career" or got.startswith("/api/career/mutate/"):
+            return await self._dispatch_career(request, got)
         if got == "/api/remote-instances" or got.startswith("/api/remote-instances/"):
             return await self._dispatch_remote_instances(connection, request, got)
         # Token issue endpoint
@@ -647,6 +657,32 @@ class GatewayHTTPHandler:
                 return response
 
         return connection.respond(404, "Not Found")
+
+    async def _dispatch_career(self, request: WsRequest, path: str) -> Response:
+        from pydantic import ValidationError
+
+        from nanobot.career.models import CareerConflictError, CareerNotFoundError
+
+        if not self.check_api_token(request):
+            return _http_error(401, "Unauthorized")
+        try:
+            if path == "/api/career/workspaces":
+                return _http_json_response(await asyncio.to_thread(self.career.catalog), extra_headers=_NO_STORE_HEADERS)
+            if path == "/api/career":
+                reference = _query_first(_parse_query(request.path), "workspace_ref") or ""
+                return _http_json_response(await asyncio.to_thread(self.career.state, reference), extra_headers=_NO_STORE_HEADERS)
+            action = path.removeprefix("/api/career/mutate/")
+            return _http_json_response(await self.career.mutate(action, _mutation_payload(request) or {}))
+        except ValidationError:
+            return _http_error(400, "career_invalid_request")
+        except CareerNotFoundError:
+            return _http_error(404, "career_record_not_found")
+        except CareerConflictError:
+            return _http_error(409, "career_conflict")
+        except ValueError:
+            return _http_error(400, "career_invalid_request")
+        except (OSError, sqlite3.Error):
+            return _http_error(503, "career_storage_unavailable")
 
     async def _dispatch_remote_instances(
         self, connection: Any, request: WsRequest, path: str,
