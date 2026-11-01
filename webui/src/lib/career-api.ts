@@ -3,6 +3,7 @@ import type {
   CareerState, CareerThread, CareerWorkspace, JobAction, JobVersion, JobWrite,
   PersonalConditions, ResumeAction, ResumeVersion, ResumeWrite,
   CareerConversationData,
+  CareerPlan, CareerPlanSource, CareerTask, CareerTaskInput,
 } from "@/lib/career-types";
 
 function record(value: unknown): value is Record<string, unknown> {
@@ -30,6 +31,22 @@ function thread(value: unknown): value is CareerThread {
     && Array.isArray(value.conditions.locations) && value.conditions.locations.every((item) => typeof item === "string");
 }
 
+function planSource(value: unknown): value is CareerPlanSource {
+  return record(value) && (value.turn_id === null || typeof value.turn_id === "string")
+    && ["queued", "running", "succeeded", "failed", "cancelled"].includes(String(value.analysis_status))
+    && typeof value.resume_name === "string" && Number.isInteger(value.resume_version)
+    && typeof value.job_name === "string" && Number.isInteger(value.job_version)
+    && typeof value.created_at === "string" && Number.isFinite(Date.parse(value.created_at))
+    && typeof value.reply_excerpt === "string";
+}
+function taskInput(value: unknown): value is CareerTaskInput {
+  return record(value) && ["title", "action", "completion_criteria", "basis"].every((key) => typeof value[key] === "string");
+}
+function task(value: unknown): value is CareerTask {
+  return record(value) && ["id", "plan_id", "title", "action", "completion_criteria", "result"].every((key) => typeof value[key] === "string")
+    && (value.basis === undefined || typeof value.basis === "string") && (value.status === "pending" || value.status === "completed");
+}
+
 export async function fetchCareerWorkspaces(token: string, signal?: AbortSignal): Promise<CareerWorkspace[]> {
   const value = await request<unknown>("/api/career/workspaces", token, { signal }, API_READ_TIMEOUT_MS);
   if (!record(value) || !Array.isArray(value.workspaces)) return invalid();
@@ -49,10 +66,13 @@ export async function fetchCareerState(token: string, reference: string, signal?
     || !Array.isArray(value.threads) || !value.threads.every(thread)
     || (value.deleted_thread_ids !== undefined && (!Array.isArray(value.deleted_thread_ids) || !value.deleted_thread_ids.every((item) => typeof item === "string")))
     || !Array.isArray(value.plans) || !value.plans.every((item) => record(item)
-      && ["id", "analysis_id", "career_thread_id"].every((key) => typeof item[key] === "string") && item.status === "confirmed")
-    || !Array.isArray(value.tasks) || !value.tasks.every((item) => record(item)
-      && ["id", "plan_id", "title", "action", "completion_criteria", "result"].every((key) => typeof item[key] === "string")
-      && (item.status === "pending" || item.status === "completed"))
+      && ["id", "analysis_id", "career_thread_id"].every((key) => typeof item[key] === "string") && item.status === "confirmed"
+      && (item.source === undefined || planSource(item.source)))
+    || (value.drafts !== undefined && (!Array.isArray(value.drafts) || !value.drafts.every((item) => record(item)
+      && ["id", "analysis_id", "career_thread_id"].every((key) => typeof item[key] === "string") && item.status === "draft"
+      && Array.isArray(item.proposed_tasks) && item.proposed_tasks.length > 0 && item.proposed_tasks.length <= 50
+      && item.proposed_tasks.every(taskInput) && planSource(item.source))))
+    || !Array.isArray(value.tasks) || !value.tasks.every(task)
     || !record(value.chat_available) || !Object.values(value.chat_available).every((item) => typeof item === "boolean")) return invalid();
   // All UI-consumed fields are checked at this transport boundary.
   return value as unknown as CareerState;
@@ -81,6 +101,21 @@ export async function confirmCareerJob(transport: WebUIMutationTransport, refere
 export async function createCareerThread(transport: WebUIMutationTransport, reference: string, resumeId: string, jobId: string, conditions: PersonalConditions): Promise<CareerThread> {
   const result = await mutation<unknown>(transport, "career.thread.create", { workspace_ref: reference, resume_version_id: resumeId, job_version_id: jobId, conditions });
   return thread(result) ? result : invalid();
+}
+
+export async function confirmCareerPlan(transport: WebUIMutationTransport, reference: string, threadId: string, planId: string, tasks: CareerTaskInput[]): Promise<CareerPlan> {
+  const value = await mutation<unknown>(transport, "career.plan.confirm", { workspace_ref: reference, thread_id: threadId, id: planId, tasks });
+  if (!record(value) || value.id !== planId || value.career_thread_id !== threadId || value.status !== "confirmed"
+    || typeof value.analysis_id !== "string" || !planSource(value.source)) return invalid();
+  return value as unknown as CareerPlan;
+}
+export async function cancelCareerPlan(transport: WebUIMutationTransport, reference: string, threadId: string, planId: string): Promise<void> {
+  const value = await mutation<unknown>(transport, "career.plan.cancel", { workspace_ref: reference, thread_id: threadId, id: planId });
+  if (!record(value) || value.id !== planId || value.career_thread_id !== threadId || value.status !== "cancelled") return invalid();
+}
+export async function updateCareerTask(transport: WebUIMutationTransport, reference: string, threadId: string, taskId: string, status: CareerTask["status"], result: string): Promise<CareerTask> {
+  const value = await mutation<unknown>(transport, "career.task.update", { workspace_ref: reference, thread_id: threadId, id: taskId, status, result });
+  return record(value) && value.career_thread_id === threadId && task(value) && value.id === taskId ? value : invalid();
 }
 
 export async function fetchCareerConversation(token: string, reference: string, threadId: string, signal?: AbortSignal): Promise<CareerConversationData> {

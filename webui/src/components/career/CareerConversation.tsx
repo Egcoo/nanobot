@@ -8,15 +8,18 @@ import { RecoveryNotice } from "@/components/thread/RecoveryNotice";
 import { useNanobotStream } from "@/hooks/useNanobotStream";
 import { useClient } from "@/providers/ClientProvider";
 import { fetchCareerConversation } from "@/lib/career-api";
-import type { CareerConversationData, CareerThread } from "@/lib/career-types";
+import type { CareerConversationData, CareerPlanDraft, CareerTaskInput, CareerThread } from "@/lib/career-types";
 import { projectWebuiThreadMessages } from "@/lib/thread-display-projection";
 import { CareerReferenceMaterials } from "./CareerReferenceMaterials";
+import { CareerPlanDrafts } from "./CareerPlanDrafts";
 
-export function CareerConversation({ reference, thread, onResumes, onJobs }: {
+export function CareerConversation({ reference, thread, onResumes, onJobs, drafts, busy, onConfirmPlan, onCancelPlan }: {
   reference: string; thread: CareerThread; onResumes: () => void; onJobs: () => void;
+  drafts: CareerPlanDraft[]; busy: boolean;
+  onConfirmPlan: (id: string, tasks: CareerTaskInput[]) => Promise<void>; onCancelPlan: (id: string) => Promise<void>;
 }) {
   const { t } = useTranslation();
-  const { client, getToken } = useClient();
+  const { client, getToken, webuiCapabilities } = useClient();
   const [epoch, setEpoch] = useState(0);
   const refresh = useCallback(() => setEpoch((value) => value + 1), []);
   const [resource, setResource] = useState<{ owner: typeof client; value: CareerConversationData } | null>(null);
@@ -67,6 +70,7 @@ export function CareerConversation({ reference, thread, onResumes, onJobs }: {
             {t("career.replyMaterials", { resume: source.resume_name, resumeVersion: source.resume_version, job: source.job_name, jobVersion: source.job_version })}
           </p> : null;
         }} /> : !stream.history.loading && data ? <p className="p-3 text-sm leading-relaxed text-muted-foreground">{t("career.chatWelcome")}</p> : null}
+      <CareerPlanDrafts drafts={drafts} busy={busy} onConfirm={onConfirmPlan} onCancel={onCancelPlan} />
     </div>
     <form className="space-y-3 border-t p-4" onSubmit={(event) => { event.preventDefault(); submit(); }} aria-label={t("career.conversation")}>
       <Textarea value={text} onChange={(event) => setText(event.target.value)} maxLength={2000}
@@ -75,7 +79,7 @@ export function CareerConversation({ reference, thread, onResumes, onJobs }: {
         onKeyDown={(event) => { if (event.key === "Enter" && (event.ctrlKey || event.metaKey) && !event.nativeEvent.isComposing) { event.preventDefault(); submit(); } }}
         className="min-h-24 resize-y" />
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="min-w-0 text-xs leading-relaxed text-muted-foreground">{t("career.chatScopeHint")}</p>
+        <p className="min-w-0 text-xs leading-relaxed text-muted-foreground">{t(webuiCapabilities.includes("webui.career.plans.v1") ? "career.chatScopeHint" : "career.plansUnsupported")}</p>
         {stream.isStreaming ? <Button type="button" variant="outline" onClick={stream.stop} className="gap-2"><Square className="h-3.5 w-3.5" aria-hidden="true" />{t("career.stop")}</Button> :
           <Button type="submit" disabled={!text.trim() || !data || error || !stream.messagesReady || stream.history.loading || !!stream.history.error} className="gap-2 bg-[#efb08f] text-[#30221a] hover:bg-[#e5a07d]"><Send className="h-3.5 w-3.5" aria-hidden="true" />{t("career.send")}</Button>}
       </div>

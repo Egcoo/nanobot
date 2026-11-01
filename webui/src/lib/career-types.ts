@@ -26,7 +26,18 @@ export interface CareerThread {
   job_version_id: string;
   conditions: PersonalConditions;
 }
-export interface CareerPlan { id: string; analysis_id: string; career_thread_id: string; status: "confirmed" }
+export interface CareerPlanSource {
+  turn_id: string | null;
+  analysis_status: "queued" | "running" | "succeeded" | "failed" | "cancelled";
+  resume_name: string; resume_version: number; job_name: string; job_version: number;
+  created_at: string; reply_excerpt: string;
+}
+export interface CareerTaskInput { title: string; action: string; completion_criteria: string; basis: string }
+export interface CareerPlan { id: string; analysis_id: string; career_thread_id: string; status: "confirmed"; source?: CareerPlanSource }
+export interface CareerPlanDraft {
+  id: string; analysis_id: string; career_thread_id: string; status: "draft";
+  proposed_tasks: CareerTaskInput[]; source: CareerPlanSource;
+}
 export interface CareerTask {
   id: string;
   plan_id: string;
@@ -35,6 +46,7 @@ export interface CareerTask {
   completion_criteria: string;
   status: "pending" | "completed";
   result: string;
+  basis?: string;
 }
 export interface CareerState {
   workspace_ref: string;
@@ -44,6 +56,7 @@ export interface CareerState {
   threads: CareerThread[];
   deleted_thread_ids?: string[];
   plans: CareerPlan[];
+  drafts?: CareerPlanDraft[];
   tasks: CareerTask[];
   chat_available: Record<string, boolean>;
 }

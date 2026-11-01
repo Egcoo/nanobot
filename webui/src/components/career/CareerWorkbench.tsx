@@ -8,6 +8,7 @@ import { ApiError } from "@/lib/api";
 import {
   confirmCareerJob, confirmCareerResume, createCareerThread, fetchCareerState,
   fetchCareerWorkspaces, renameCareerResume, saveCareerJob, saveCareerResume,
+  cancelCareerPlan, confirmCareerPlan, updateCareerTask,
 } from "@/lib/career-api";
 import type { CareerSelection, CareerState, CareerWorkspace } from "@/lib/career-types";
 import { CAREER_SELECT_CLASS } from "./CareerTarget";
@@ -142,7 +143,7 @@ function CareerScope({ reference, threadId, page, setPage, onSelect, epoch, onBa
     return () => controller.abort();
   }, [load, epoch]);
   useEffect(() => client.onSessionUpdate((chatId, scope) => {
-    if (chatId.startsWith("career-") && scope === "metadata") void load();
+    if (chatId.startsWith("career-") && (scope === "metadata" || scope === "thread")) void load();
   }), [client, load]);
   const data = resource?.owner === client ? resource.value : null;
   const current = data?.threads.find((thread) => thread.id === threadId);
@@ -150,16 +151,16 @@ function CareerScope({ reference, threadId, page, setPage, onSelect, epoch, onBa
     if (threadId && data?.deleted_thread_ids?.includes(threadId)) onSelect("");
   }, [data, onSelect, threadId]);
 
-  async function perform<T,>(operation: () => Promise<T>): Promise<T | undefined> {
+  async function perform<T,>(operation: () => Promise<T>, noticeKey = "saved", conflictKey = "conflict"): Promise<T | undefined> {
     const owner = ownerRef.current;
     setBusy(true); setError(""); setNotice("");
     try {
       const result = await operation();
       if (ownerRef.current !== owner || !owner.live) return undefined;
-      setNotice("saved"); await load();
+      setNotice(noticeKey); await load();
       return ownerRef.current === owner && owner.live ? result : undefined;
     } catch (reason) {
-      if (ownerRef.current === owner && owner.live) setError(errorKey(reason));
+      if (ownerRef.current === owner && owner.live) setError(errorKey(reason) === "conflict" ? conflictKey : errorKey(reason));
       return undefined;
     } finally {
       if (ownerRef.current === owner && owner.live) setBusy(false);
@@ -181,6 +182,11 @@ function CareerScope({ reference, threadId, page, setPage, onSelect, epoch, onBa
       </div> : null}
       <ThreadVisibilityContext.Provider value={page === "workbench"}><div hidden={page !== "workbench"}><CareerHome key={`${threadId}:${preparationDraft}`} data={data} thread={current} busy={busy}
         onNavigate={setPage} onBackToChat={onBackToChat}
+        onConfirmPlan={async (id, tasks) => {
+          const plan = await perform(() => confirmCareerPlan(client, reference, threadId, id, tasks), "planSaved", "planConflict");
+          if (plan) setPage("tasks");
+        }}
+        onCancelPlan={async (id) => { await perform(() => cancelCareerPlan(client, reference, threadId, id), "draftCancelled", "planConflict"); }}
         onCreate={async (resumeId, jobId, conditions) => {
           const thread = await perform(() => createCareerThread(client, reference, resumeId, jobId, conditions));
           if (thread) onSelect(thread.id);
@@ -194,7 +200,8 @@ function CareerScope({ reference, threadId, page, setPage, onSelect, epoch, onBa
         activeVersionId={current?.job_version_id}
         onSave={(action, input) => perform(() => saveCareerJob(client, reference, action, input))}
         onConfirm={(id) => perform(() => confirmCareerJob(client, reference, id))} /></div>
-      <section hidden={page !== "tasks"} aria-label={t("career.tasks")}><PreparationList data={data} thread={current} onChoose={() => setPage("workbench")} /></section>
+      <section hidden={page !== "tasks"} aria-label={t("career.tasks")}><PreparationList data={data} thread={current} busy={busy} onChoose={() => setPage("workbench")}
+        onUpdate={async (id, status, result) => Boolean(await perform(() => updateCareerTask(client, reference, threadId, id, status, result), "saved", "planConflict"))} /></section>
     </>}
     </div>
   </div>;

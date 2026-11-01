@@ -3,18 +3,19 @@ import { ArrowRight, ArrowUpRight, BriefcaseBusiness, FileText, MessageSquareTex
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import type { CareerState, CareerThread, PersonalConditions } from "@/lib/career-types";
+import type { CareerState, CareerTaskInput, CareerThread, PersonalConditions } from "@/lib/career-types";
 import type { CareerPage } from "./CareerNavigation";
 import { CareerTarget } from "./CareerTarget";
 import { useClient } from "@/providers/ClientProvider";
 
 const CareerConversation = lazy(() => import("./CareerConversation").then((module) => ({ default: module.CareerConversation })));
 
-export function CareerHome({ data, thread, busy, onNavigate, onCreate, onBackToChat }: {
+export function CareerHome({ data, thread, busy, onNavigate, onCreate, onBackToChat, onConfirmPlan, onCancelPlan }: {
   data: CareerState; thread?: CareerThread; busy: boolean;
   onNavigate: (page: CareerPage) => void;
   onCreate: (resume: string, job: string, conditions: PersonalConditions) => Promise<void>;
   onBackToChat: () => void;
+  onConfirmPlan: (id: string, tasks: CareerTaskInput[]) => Promise<void>; onCancelPlan: (id: string) => Promise<void>;
 }) {
   const { t } = useTranslation();
   const { webuiCapabilities } = useClient();
@@ -26,7 +27,9 @@ export function CareerHome({ data, thread, busy, onNavigate, onCreate, onBackToC
   if (thread && data.chat_available[thread.id] && webuiCapabilities.includes("webui.career.chat.v1")) return <div className="mx-auto max-w-5xl space-y-4">
     <CareerTarget data={data} thread={thread} busy={busy} onCreate={onCreate} onResumes={() => onNavigate("resumes")} onJobs={() => onNavigate("jobs")} />
     <Suspense fallback={<p role="status">{t("career.loading")}</p>}><CareerConversation key={thread.id} reference={data.workspace_ref} thread={thread}
-      onResumes={() => onNavigate("resumes")} onJobs={() => onNavigate("jobs")} /></Suspense>
+      onResumes={() => onNavigate("resumes")} onJobs={() => onNavigate("jobs")} busy={busy}
+      drafts={webuiCapabilities.includes("webui.career.plans.v1") ? (data.drafts ?? []).filter((plan) => plan.career_thread_id === thread.id) : []}
+      onConfirmPlan={onConfirmPlan} onCancelPlan={onCancelPlan} /></Suspense>
   </div>;
   const summaries = [
     { page: "resumes", value: t("career.resumeCount", { count: data.resumes.length }), hint: t("career.confirmedCount", { count: data.resumes.filter((record) => record.status === "confirmed").length }) },

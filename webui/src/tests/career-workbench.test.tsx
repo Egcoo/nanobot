@@ -16,6 +16,7 @@ vi.mock("@/lib/career-api", () => ({
   fetchCareerState: vi.fn(), fetchCareerWorkspaces: vi.fn(), saveCareerResume: vi.fn(),
   confirmCareerResume: vi.fn(), renameCareerResume: vi.fn(), saveCareerJob: vi.fn(),
   confirmCareerJob: vi.fn(), createCareerThread: vi.fn(),
+  confirmCareerPlan: vi.fn(), cancelCareerPlan: vi.fn(), updateCareerTask: vi.fn(),
 }));
 
 function empty(reference = "workspace-a"): CareerState {

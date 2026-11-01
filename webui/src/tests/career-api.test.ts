@@ -1,7 +1,18 @@
 import { afterEach, expect, it, vi } from "vitest";
-import { fetchCareerConversation, fetchCareerState, fetchCareerWorkspaces, saveCareerJob } from "@/lib/career-api";
+import { confirmCareerPlan, updateCareerTask, fetchCareerConversation, fetchCareerState, fetchCareerWorkspaces, saveCareerJob } from "@/lib/career-api";
 
 afterEach(() => vi.unstubAllGlobals());
+
+it("confirms an explicitly selected plan through the mutation transport and rejects a task reply for another preparation", async () => {
+  const source = { turn_id: "turn", analysis_status: "succeeded", resume_name: "Resume", resume_version: 1,
+    job_name: "Job", job_version: 1, created_at: "2026-11-01T08:00:00Z", reply_excerpt: "Advice" };
+  const requestMutation = vi.fn().mockResolvedValue({ id: "plan", analysis_id: "analysis", career_thread_id: "thread", status: "confirmed", source });
+  const tasks = [{ title: "Task", action: "Write one page", completion_criteria: "Page ready", basis: "Job asks for project evidence" }];
+  await confirmCareerPlan({ requestMutation }, "workspace", "thread", "plan", tasks);
+  expect(requestMutation).toHaveBeenCalledWith("career.plan.confirm", { workspace_ref: "workspace", thread_id: "thread", id: "plan", tasks }, expect.any(Number));
+  requestMutation.mockResolvedValue({ id: "task", plan_id: "plan", career_thread_id: "other", title: "Task", action: "Action", completion_criteria: "Criteria", status: "completed", result: "Done" });
+  await expect(updateCareerTask({ requestMutation }, "workspace", "thread", "task", "completed", "Done")).rejects.toThrow("career_invalid_response");
+});
 
 it("rejects a conversation response for another preparation before displaying its sources", async () => {
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ thread_id: "other", preview: {}, analyses: [] }), { headers: { "content-type": "application/json" } })));
