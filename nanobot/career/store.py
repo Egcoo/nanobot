@@ -24,7 +24,7 @@ from nanobot.career.models import (
 from nanobot.config.paths import get_data_dir
 from nanobot.session.location import SessionLocation
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 _Record = TypeVar("_Record", bound=BaseModel)
 
 _SCHEMA = (
@@ -72,7 +72,7 @@ _SCHEMA = (
         position INTEGER NOT NULL CHECK (position >= 0),
         title TEXT NOT NULL, action TEXT NOT NULL, completion_criteria TEXT NOT NULL,
         status TEXT NOT NULL CHECK (status IN ('pending', 'completed')),
-        result TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
+        result TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL, basis TEXT NOT NULL DEFAULT '',
         UNIQUE (plan_id, position)
     )""",
     "CREATE INDEX analysis_thread_idx ON analysis_runs(career_thread_id, created_at)",
@@ -151,14 +151,16 @@ class CareerStore:
             with db:
                 db.execute("BEGIN IMMEDIATE")
                 version = db.execute("PRAGMA user_version").fetchone()[0]
-                if version not in (0, 1, SCHEMA_VERSION):
+                if version not in (0, 1, 2, SCHEMA_VERSION):
                     raise ValueError(f"unsupported career schema_version: {version}")
                 if version == 0:
                     for statement in _SCHEMA:
                         db.execute(statement)
                     db.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
-                elif version == 1:
-                    db.execute("ALTER TABLE career_threads ADD COLUMN deleted_at TEXT")
+                elif version in (1, 2):
+                    if version == 1:
+                        db.execute("ALTER TABLE career_threads ADD COLUMN deleted_at TEXT")
+                    db.execute("ALTER TABLE preparation_tasks ADD COLUMN basis TEXT NOT NULL DEFAULT ''")
                     db.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
 
     @contextmanager

@@ -58,6 +58,7 @@ from nanobot.utils.helpers import sync_workspace_templates
 from nanobot.utils.token_encoding import warmup_token_encoding
 from nanobot.webui.build import BuildMode
 from nanobot.webui.career_policy import career_discussion_policy
+from nanobot.webui.career_tools import ProposePreparationPlanTool
 from nanobot.webui.dev import WebUIDevError, WebUIDevServer
 from nanobot.webui.sidebar_state import read_webui_sidebar_state
 
@@ -847,6 +848,13 @@ def _run_claimed_gateway(
         webui_discard_session=agent.discard_session,
         config_path=Path(config_path),
     )
+
+    websocket_channel = channels.channels.get("websocket")
+    if websocket_channel is not None:
+        from nanobot.channels.websocket.runtime import WebSocketChannel
+
+        if isinstance(websocket_channel, WebSocketChannel):
+            tools.register(ProposePreparationPlanTool(websocket_channel.gateway.http.career, bus))
 
     async def _pick_heartbeat_target() -> tuple[str, str]:
         """Pick a routable channel/chat target for heartbeat-triggered messages."""

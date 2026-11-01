@@ -30,9 +30,9 @@ from nanobot.runtime_context import RuntimeContextBlock, wrap_runtime_context_li
 from nanobot.security.workspace_access import WorkspaceScope
 from nanobot.utils.prompt_templates import render_template
 from nanobot.webui.career_api import CareerAPI
+from nanobot.webui.metadata import CAREER_TURN_METADATA as CAREER_TURN_METADATA
 from nanobot.webui.metadata import WEBUI_TURN_METADATA_KEY
 
-CAREER_TURN_METADATA = "_career_turn"
 _MAX_RESULT = 200_000
 
 

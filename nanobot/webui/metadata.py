@@ -3,6 +3,7 @@
 from nanobot.bus.events import INBOUND_META_TURN_ID
 
 WEBUI_TURN_METADATA_KEY = INBOUND_META_TURN_ID
+CAREER_TURN_METADATA = "_career_turn"
 WEBUI_SYSTEM_COMMAND_TURN_PREFIX = "webui-system:"
 # Set by authenticated WebUI ingress, never copied from an envelope's metadata.
 WEBUI_RESTART_CONTROL_METADATA_KEY = "_webui_restart_control"

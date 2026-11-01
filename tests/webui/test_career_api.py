@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+from contextlib import suppress
 from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
@@ -10,6 +11,9 @@ import pytest
 from websockets.datastructures import Headers
 from websockets.http11 import Request, Response
 
+from nanobot.agent.loop import AgentLoop
+from nanobot.agent.tools.context import RequestContext, request_context
+from nanobot.agent.tools.registry import ToolRegistry
 from nanobot.bus.outbound_events import (
     StreamDeltaEvent,
     StreamEndEvent,
@@ -18,14 +22,20 @@ from nanobot.bus.outbound_events import (
     outbound_message_for_event,
 )
 from nanobot.bus.queue import MessageBus
+from nanobot.career.models import TaskInput
 from nanobot.channels.manager import ChannelManager
 from nanobot.channels.websocket.runtime import WebSocketChannel, WebSocketConfig
+from nanobot.providers.base import LLMResponse, ToolCallRequest
 from nanobot.runtime_context import RUNTIME_CONTEXT_INPUT_META
 from nanobot.security.workspace_access import WORKSPACE_SCOPE_METADATA_KEY
 from nanobot.session.manager import SessionManager
+from nanobot.session.webui_turns import WebuiTurnCoordinator
+from nanobot.webui.career_policy import career_discussion_policy
+from nanobot.webui.career_tools import ProposePreparationPlanTool
 from nanobot.webui.career_turns import CAREER_TURN_METADATA
 from nanobot.webui.gateway_services import build_gateway_services
 from nanobot.webui.workspaces import write_webui_workspace_state
+from scripts.career_browser_gateway import EngineeringProvider
 
 
 @pytest.fixture
@@ -213,6 +223,147 @@ async def _career_turn(gateway, *, unified=False, turn_id="career-turn", ordinar
     })
     message = await services.http.bus.consume_inbound()
     return channel, connection, message, reference, thread
+
+
+def _plan_context(gateway, message, thread):
+    version = gateway[0].session_manager.read_session_version(thread["session_key"])
+    assert version is not None
+    return RequestContext(channel="websocket", chat_id=message.chat_id, session_key=thread["session_key"],
+                          session_generation=version[0], metadata=message.metadata,
+                          workspace_scope=gateway[0].http.workspaces.default_scope())
+
+
+def _suggested_tasks():
+    return [TaskInput(title=f"任务 {index}", action="整理一页项目说明", completion_criteria="一页说明包含问题、方案和验证",
+                      basis="简历中有原型练习，岗位要求原型设计。") for index in range(1, 4)]
+
+
+async def test_plan_draft_edit_confirm_retry_and_task_progress_are_scoped_and_persistent(gateway):
+    channel, connection, message, reference, thread = await _career_turn(gateway)
+    try:
+        tool = ProposePreparationPlanTool(gateway[0].http.career, gateway[0].http.bus)
+        proposed = _suggested_tasks()
+        with request_context(_plan_context(gateway, message, thread)):
+            result = json.loads(await tool.execute(tasks=[item.model_dump() for item in proposed]))
+            repeated = json.loads(await tool.execute(tasks=[item.model_dump() for item in proposed]))
+        assert result["draft_id"] == repeated["draft_id"] and result["saved_as_tasks"] is False
+        state = _body(await _get(gateway, f"/api/career?workspace_ref={reference}"))
+        assert len(state["drafts"]) == 1 and state["tasks"] == []
+        payload = dict(workspace_ref=reference, thread_id=thread["id"], id=result["draft_id"],
+                       tasks=[{**proposed[0].model_dump(), "title": "用户编辑后的任务"}, proposed[2].model_dump()])
+        assert (await _mutate(gateway, "career.plan.confirm", **payload)).status_code == 409
+        service, _ = gateway[0].http.career.bound_thread(reference, thread["id"])
+        analysis_id = message.metadata[CAREER_TURN_METADATA]["analysis_id"]
+        service.update_analysis(analysis_id, status="succeeded", result="工程建议摘要")
+        service.rename_resume(thread["resume_version_id"], name="后来的名称", notes="")
+        confirmed = _body(await _mutate(gateway, "career.plan.confirm", **payload))
+        assert confirmed["source"]["resume_name"] == "工程简历"
+        assert confirmed["source"]["turn_id"] == "career-turn"
+        tasks = service.list_tasks(confirmed["id"])
+        assert [task.title for task in tasks] == ["用户编辑后的任务", "任务 3"]
+        assert tasks[0].basis == proposed[0].basis
+        update = dict(workspace_ref=reference, thread_id=thread["id"], id=tasks[0].id)
+        assert (await _mutate(gateway, "career.task.update", **update, status="completed", result="完成结果")).status_code == 200
+        other = _body(await _mutate(gateway, "career.thread.create", workspace_ref=reference,
+                                   resume_version_id=thread["resume_version_id"], job_version_id=thread["job_version_id"], conditions={"days_per_week": 5}))
+        assert (await _mutate(gateway, "career.task.update", workspace_ref=reference, thread_id=other["id"], id=tasks[0].id,
+                              status="pending", result="不应写入的内容")).status_code == 409
+        assert service.list_tasks(confirmed["id"])[0].result == "完成结果"
+        await _mutate(gateway, "career.plan.confirm", **payload)
+        assert [task.id for task in service.list_tasks(confirmed["id"])] == [task.id for task in tasks]
+        assert service.list_tasks(confirmed["id"])[0].status == "completed"
+        await _mutate(gateway, "career.task.update", **update, status="pending")
+        assert service.list_tasks(confirmed["id"])[0].result == "完成结果"
+        assert service.get_plan(confirmed["id"]).proposed_tasks == tuple(proposed)
+        state = _body(await _get(gateway, f"/api/career?workspace_ref={reference}"))
+        assert state["drafts"] == [] and len(state["tasks"]) == 2
+    finally:
+        await channel._cleanup_connection(connection)
+
+
+async def test_plan_actions_reject_another_preparation_and_cancel_does_not_create_tasks(gateway):
+    channel, connection, message, reference, thread = await _career_turn(gateway)
+    try:
+        proposal = await gateway[0].http.career.propose_plan_for_turn(_plan_context(gateway, message, thread), tuple(_suggested_tasks()))
+        other = _body(await _mutate(gateway, "career.thread.create", workspace_ref=reference,
+                                   resume_version_id=thread["resume_version_id"], job_version_id=thread["job_version_id"], conditions={"days_per_week": 5}))
+        wrong = dict(workspace_ref=reference, thread_id=other["id"], id=proposal["id"])
+        assert (await _mutate(gateway, "career.plan.cancel", **wrong)).status_code == 409
+        assert (await _mutate(gateway, "career.plan.confirm", **wrong, tasks=[_suggested_tasks()[0].model_dump()])).status_code == 409
+        payload = dict(workspace_ref=reference, thread_id=thread["id"], id=proposal["id"])
+        assert _body(await _mutate(gateway, "career.plan.cancel", **payload))["status"] == "cancelled"
+        assert _body(await _mutate(gateway, "career.plan.cancel", **payload))["status"] == "cancelled"
+        service, _ = gateway[0].http.career.bound_thread(reference, thread["id"])
+        assert service.list_tasks(str(proposal["id"])) == []
+        assert (await _mutate(gateway, "career.plan.confirm", **payload, tasks=[_suggested_tasks()[0].model_dump()])).status_code == 409
+    finally:
+        await channel._cleanup_connection(connection)
+
+
+async def test_model_tool_cannot_forge_scope_or_save_without_a_bound_current_generation(gateway):
+    channel, connection, message, reference, thread = await _career_turn(gateway)
+    try:
+        tool = ProposePreparationPlanTool(gateway[0].http.career, gateway[0].http.bus)
+        tasks = [item.model_dump() for item in _suggested_tasks()]
+        context = _plan_context(gateway, message, thread)
+        with request_context(replace(context, metadata={})):
+            assert "No tasks were saved" in await tool.execute(tasks=tasks)
+        with request_context(replace(context, session_generation="a-stale-generation")):
+            assert "No tasks were saved" in await tool.execute(tasks=tasks)
+        with request_context(context):
+            assert "No tasks were saved" in await tool.execute(tasks=tasks, analysis_id="forged")
+        state = _body(await _get(gateway, f"/api/career?workspace_ref={reference}"))
+        assert state["drafts"] == [] and state["tasks"] == []
+    finally:
+        await channel._cleanup_connection(connection)
+
+
+async def test_registered_plan_tool_runs_through_the_real_agent_and_only_creates_a_draft(gateway):
+    channel, connection, message, reference, thread = await _career_turn(gateway)
+    bus = gateway[0].http.bus
+
+    class Provider(EngineeringProvider):
+        async def chat(self, messages, **kwargs):
+            if messages[-1]["role"] != "tool":
+                return LLMResponse(content="", tool_calls=[ToolCallRequest("proposal", "propose_preparation_plan", {"tasks": [item.model_dump() for item in _suggested_tasks()]})], finish_reason="tool_calls")
+            return LLMResponse(content="工程草稿已生成，请在界面核对并确认。", finish_reason="stop")
+
+    tools = ToolRegistry()
+    tools.register(ProposePreparationPlanTool(gateway[0].http.career, bus))
+    loop = AgentLoop(bus, Provider(), gateway[0].session_manager.workspace, session_manager=gateway[0].session_manager,
+                     tool_registry=tools, hook_factories=[career_discussion_policy], max_iterations=3)
+
+    def schedule(awaitable):
+        async def work():
+            await awaitable
+        loop.schedule_background(work())
+
+    coordinator = WebuiTurnCoordinator(bus, gateway[0].session_manager, schedule)
+    unsubscribe = coordinator.subscribe()
+
+    async def deliver():
+        while True:
+            item = await bus.consume_outbound()
+            try:
+                await ChannelManager._send_once(channel, item)
+            finally:
+                bus.outbound.task_done()
+
+    delivery = asyncio.create_task(deliver())
+    try:
+        await loop._enqueue_session_message(message)
+        await asyncio.gather(*tuple(loop._active_tasks[loop._effective_session_key(message)]))
+        await asyncio.wait_for(bus.outbound.join(), 10)
+        state = _body(await _get(gateway, f"/api/career?workspace_ref={reference}"))
+        assert len(state["drafts"]) == 1 and state["tasks"] == []
+        assert state["drafts"][0]["source"]["analysis_status"] == "succeeded"
+    finally:
+        delivery.cancel()
+        with suppress(asyncio.CancelledError):
+            await delivery
+        unsubscribe()
+        await loop.aclose()
+        await channel._cleanup_connection(connection)
 
 
 async def test_conversation_preview_is_authenticated_and_rejects_wrong_session_scope(gateway, tmp_path: Path):

@@ -325,13 +325,17 @@ class CareerService:
             return record
 
     def propose_plan(self, analysis_id: str, tasks: Sequence[TaskInput]) -> PreparationPlan:
+        proposed = _TASK_LIST.validate_python(tuple(tasks))
         with self.store.transaction(write=True) as db:
             analysis = self.store.analysis(db, analysis_id)
             self.store.thread(db, analysis.career_thread_id)
             if analysis.status not in {"running", "succeeded"}:
                 raise CareerConflictError("a plan draft requires a running or successful bound analysis")
+            for existing in self.store.plans(db, analysis.career_thread_id):
+                if existing.analysis_id == analysis.id and existing.status == "draft" and existing.proposed_tasks == proposed:
+                    return existing
             record = PreparationPlan(
-                id=_id("plan"), analysis_id=analysis.id, proposed_tasks=tuple(tasks), created_at=_now(),
+                id=_id("plan"), analysis_id=analysis.id, proposed_tasks=proposed, created_at=_now(),
             )
             self.store.add_plan(db, record)
             return record
@@ -358,6 +362,7 @@ class CareerService:
                 if selection is not None:
                     saved = tuple(TaskInput(
                         title=task.title, action=task.action, completion_criteria=task.completion_criteria,
+                        basis=task.basis,
                     ) for task in self.store.tasks(db, plan_id))
                     if selection != saved:
                         raise CareerConflictError("this plan is already confirmed with a different selection")
@@ -371,6 +376,7 @@ class CareerService:
                 self.store.add_task(db, PreparationTask(
                     id=_id("task"), plan_id=current.id, position=position,
                     title=task.title, action=task.action, completion_criteria=task.completion_criteria,
+                    basis=task.basis,
                     created_at=now, updated_at=now,
                 ))
             record = _replace(current, status="confirmed", confirmed_at=now)

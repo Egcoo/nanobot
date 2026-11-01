@@ -12,12 +12,17 @@ from typing import Annotated, cast
 
 from pydantic import BaseModel, ConfigDict, Field, JsonValue
 
+from nanobot.agent.tools.context import RequestContext
+from nanobot.career.context import redact
 from nanobot.career.models import (
     CareerConflictError,
     CareerNotFoundError,
     CareerThread,
     PersonalConditions,
+    PreparationPlan,
     ShortText,
+    TaskList,
+    TaskStatus,
 )
 from nanobot.career.service import CareerService
 from nanobot.career.store import CareerStore
@@ -27,6 +32,7 @@ from nanobot.security.workspace_access import (
     build_workspace_scope,
 )
 from nanobot.session.manager import SessionManager
+from nanobot.webui.metadata import CAREER_TURN_METADATA, WEBUI_TURN_METADATA_KEY
 from nanobot.webui.workspaces import WebUIWorkspaceController, read_webui_workspace_state
 
 CAREER_MUTATIONS = frozenset({
@@ -34,6 +40,7 @@ CAREER_MUTATIONS = frozenset({
     "career.resume.rename", "career.resume.confirm",
     "career.job.create", "career.job.edit", "career.job.revise", "career.job.confirm",
     "career.thread.create",
+    "career.plan.confirm", "career.plan.cancel", "career.task.update",
 })
 
 
@@ -71,6 +78,24 @@ class _ThreadCreate(_Request):
     resume_version_id: ShortText
     job_version_id: ShortText
     conditions: PersonalConditions = Field(default_factory=PersonalConditions)
+
+
+class _PlanBinding(_Request):
+    thread_id: ShortText
+    analysis_id: ShortText
+
+
+class _PlanAction(_VersionRequest):
+    thread_id: ShortText
+
+
+class _PlanConfirm(_PlanAction):
+    tasks: TaskList
+
+
+class _TaskUpdate(_PlanAction):
+    status: TaskStatus
+    result: Annotated[str, Field(max_length=20_000)] | None = None
 
 
 def _scope_ref(scope: WorkspaceScope) -> str:
@@ -188,9 +213,9 @@ class CareerAPI:
         service, scope = self._resolve(reference)
         self._retire_missing_threads(service)
         threads = service.list_threads()
-        plans = [(plan, thread.id) for thread in threads for plan in service.list_plans(thread.id)
-                 if plan.status == "confirmed"]
-        tasks = [task for plan, _ in plans for task in service.list_tasks(plan.id)]
+        all_plans = [plan for thread in threads for plan in service.list_plans(thread.id)]
+        plans = [plan for plan in all_plans if plan.status == "confirmed"]
+        tasks = [task for plan in plans for task in service.list_tasks(plan.id)]
         availability: dict[str, bool] = {}
         for thread in threads:
             payload = self.sessions.read_session_metadata(thread.session_key) if self.sessions else None
@@ -202,11 +227,71 @@ class CareerAPI:
             "jobs": [item.model_dump(mode="json") for item in service.list_jobs()],
             "threads": [item.model_dump(mode="json") for item in threads],
             "deleted_thread_ids": [item.id for item in service.list_threads(include_deleted=True) if item.deleted_at is not None],
-            "plans": [{**item.model_dump(mode="json"), "career_thread_id": thread_id}
-                      for item, thread_id in plans],
+            "plans": [self._plan_payload(service, item) for item in plans],
+            "drafts": [self._plan_payload(service, item) for item in all_plans if item.status == "draft"],
             "tasks": [item.model_dump(mode="json") for item in tasks],
             "chat_available": availability,
         }
+
+    @staticmethod
+    def _plan_payload(service: CareerService, plan: PreparationPlan) -> dict[str, object]:
+        analysis = service.get_analysis(plan.analysis_id)
+        snapshot = analysis.snapshot
+        return {
+            **plan.model_dump(mode="json"), "career_thread_id": analysis.career_thread_id,
+            "source": {
+                "turn_id": snapshot.turn_id, "analysis_status": analysis.status,
+                "resume_name": redact(snapshot.resume.name), "resume_version": snapshot.resume.version,
+                "job_name": redact(snapshot.job.name), "job_version": snapshot.job.version,
+                "created_at": analysis.created_at.isoformat(), "reply_excerpt": redact(analysis.result or "")[:2_000],
+            },
+        }
+
+    async def propose_plan_for_turn(self, context: RequestContext, tasks: TaskList) -> dict[str, object]:
+        if (context.channel != "websocket" or context.metadata.get("webui") is not True
+                or context.workspace_scope is None or not context.session_generation
+                or context.session_key != f"websocket:{context.chat_id}"):
+            raise CareerConflictError("career_plan_requires_bound_turn")
+        binding = _PlanBinding.model_validate(context.metadata.get(CAREER_TURN_METADATA))
+        if _scope_ref(context.workspace_scope) != binding.workspace_ref:
+            raise CareerConflictError("career_plan_scope_mismatch")
+
+        def propose() -> dict[str, object]:
+            service, thread = self.bound_thread(binding.workspace_ref, binding.thread_id)
+            assert self.sessions is not None
+            version = self.sessions.read_session_version(thread.session_key)
+            analysis = service.get_analysis(binding.analysis_id)
+            turn_id = context.metadata.get(WEBUI_TURN_METADATA_KEY)
+            if (thread.session_key != context.session_key or version is None
+                    or version[0] != context.session_generation
+                    or analysis.career_thread_id != thread.id or not isinstance(turn_id, str)
+                    or analysis.snapshot.turn_id != turn_id):
+                raise CareerConflictError("career_plan_scope_mismatch")
+            # Tool execution can precede delivery of the first streaming event.
+            if analysis.status == "queued":
+                service.update_analysis(analysis.id, status="running")
+            return self._plan_payload(service, service.propose_plan(analysis.id, tasks))
+
+        async with self._lifecycle_lock:
+            return await asyncio.to_thread(propose)
+
+    def _mutate_plan(self, action: str, payload: dict[str, object]) -> dict[str, object]:
+        request = (_PlanConfirm if action == "career.plan.confirm" else _TaskUpdate if action == "career.task.update" else _PlanAction).model_validate(payload)
+        service, thread = self.bound_thread(request.workspace_ref, request.thread_id)
+        if isinstance(request, _TaskUpdate):
+            # Resolve ownership through stored relationships, never client paths.
+            with service.store.transaction() as db:
+                current = service.store.task(db, request.id)
+                plan = service.store.plan(db, current.plan_id)
+                analysis = service.store.analysis(db, plan.analysis_id)
+            if analysis.career_thread_id != thread.id:
+                raise CareerConflictError("career_task_scope_mismatch")
+            return {**service.update_task(request.id, status=request.status, result=request.result).model_dump(mode="json"), "session_key": thread.session_key, "career_thread_id": thread.id}
+        plan = service.get_plan(request.id)
+        if service.get_analysis(plan.analysis_id).career_thread_id != thread.id:
+            raise CareerConflictError("career_plan_scope_mismatch")
+        result = service.confirm_plan(plan.id, tasks=request.tasks) if isinstance(request, _PlanConfirm) else service.cancel_plan(plan.id)
+        return {**self._plan_payload(service, result), "session_key": thread.session_key}
 
     def _deletion_binding(self, session_key: str) -> tuple[CareerService, CareerThread] | None:
         if self.sessions is None or not session_key.startswith("websocket:career-"):
@@ -286,6 +371,9 @@ class CareerAPI:
     async def mutate(self, action: str, payload: dict[str, object]) -> dict[str, object]:
         if action not in CAREER_MUTATIONS:
             raise CareerNotFoundError("career_action_not_found")
+        if action in {"career.plan.confirm", "career.plan.cancel", "career.task.update"}:
+            async with self._lifecycle_lock:
+                return await asyncio.to_thread(self._mutate_plan, action, payload)
         if action != "career.thread.create":
             return await asyncio.to_thread(self._mutate_record, action, payload)
         async with self._lifecycle_lock:

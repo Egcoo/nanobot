@@ -20,17 +20,19 @@ from typing import Any
 import httpx
 
 from nanobot.agent.loop import AgentLoop
+from nanobot.agent.tools.context import current_request_context
 from nanobot.agent.tools.registry import ToolRegistry
 from nanobot.bus.queue import MessageBus
 from nanobot.channels.manager import ChannelManager
 from nanobot.channels.websocket.runtime import WebSocketChannel, WebSocketConfig
 from nanobot.config.home import set_home_path
 from nanobot.config.loader import load_config, set_config_path
-from nanobot.providers.base import LLMProvider, LLMResponse
+from nanobot.providers.base import LLMProvider, LLMResponse, ToolCallRequest
 from nanobot.providers.factory import build_provider_snapshot
 from nanobot.session.manager import SessionManager
 from nanobot.session.webui_turns import WebuiTurnCoordinator
 from nanobot.webui.career_policy import career_discussion_policy
+from nanobot.webui.career_tools import ProposePreparationPlanTool
 from nanobot.webui.gateway_services import build_gateway_services
 from nanobot.webui.history import fact_from_record
 from nanobot.webui.workspaces import write_webui_workspace_state
@@ -50,6 +52,18 @@ class EngineeringProvider(LLMProvider):
         reasoning_effort: str | None = None, tool_choice: str | dict[str, Any] | None = None,
     ) -> LLMResponse:
         current = str(messages[-1]["content"])
+        if messages[-1]["role"] == "tool":
+            return LLMResponse(content="工程测试：准备草稿已生成，请在界面核对并确认。" if '"draft_id"' in current else "工程测试：工具未生成草稿。", finish_reason="stop")
+        context = current_request_context()
+        intent = context.original_user_text if context and context.original_user_text else current
+        if "准备计划" in intent:
+            project = "CV_C9" if "CV_C9" in current else "CV_A7"
+            tasks = [
+                {"title": "整理项目说明", "action": f"将 {project} 的问题、方案与验证过程整理为一页。", "completion_criteria": "完成一页项目说明，区分已有结果与待确认事项。", "basis": f"简历包含 {project} 项目，可以从现有经历准备项目表达。"},
+                {"title": "核对岗位要求", "action": "逐条对照 JOB_B4 原文，缺失经历标为待确认。", "completion_criteria": "完成一页岗位对照表，列明证据和待确认项。", "basis": "岗位要求用户访谈经历，简历尚未说明，应先核对。"},
+                {"title": "准备项目口述", "action": f"围绕 {project} 练习两分钟项目介绍。", "completion_criteria": "完成一份可以在两分钟内讲清的提纲。", "basis": "可以基于已确认项目准备口述，不需要编造额外经历。"},
+            ]
+            return LLMResponse(content="", tool_calls=[ToolCallRequest(f"proposal-{len(messages)}", "propose_preparation_plan", {"tasks": tasks})], finish_reason="tool_calls")
         # The real context builder can merge a cancelled user input into the next
         # user message. Its old delay marker must not delay the new test question.
         if "WAIT_FOR_CANCEL" in current and "请告诉我项目代号" not in current and not self.waited:
@@ -118,6 +132,7 @@ async def run(root: Path, port: int, *, configured_model: bool = False) -> None:
             fact_from_record({"event": "message", "chat_id": "ordinary", "text": "工程测试：原有聊天历史仍然可读。"}),
         ], expected_generation=None)
     channel = WebSocketChannel(config, bus, gateway=gateway)
+    agent.tools.register(ProposePreparationPlanTool(gateway.http.career, bus))
     def schedule(awaitable: Awaitable[None]) -> None:
         async def work() -> None:
             await awaitable

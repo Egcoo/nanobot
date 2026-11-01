@@ -114,6 +114,7 @@ class TaskInput(_CareerModel):
     completion_criteria: Annotated[
         str, StringConstraints(strip_whitespace=True, min_length=1, max_length=5_000)
     ]
+    basis: Annotated[str, StringConstraints(strip_whitespace=True, max_length=2_000)] = ""
 
 
 TaskList = Annotated[tuple[TaskInput, ...], Field(min_length=1, max_length=50)]
@@ -138,6 +139,7 @@ class PreparationTask(_CareerModel):
     title: ShortText
     action: str
     completion_criteria: str
+    basis: str = ""
     status: TaskStatus = "pending"
     result: Annotated[str, Field(max_length=20_000)] = ""
     created_at: datetime

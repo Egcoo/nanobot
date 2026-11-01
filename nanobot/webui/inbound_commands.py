@@ -1230,6 +1230,10 @@ class WebUICommandRouter:
                         session_key = payload.get("key")
                         if isinstance(session_key, str) and session_key.startswith("websocket:"):
                             await self._transport.send_session_updated(session_key.removeprefix("websocket:"), scope="metadata")
+                    if action in {"career.plan.confirm", "career.plan.cancel", "career.task.update"} and isinstance(result, dict):
+                        session_key = cast(dict[str, object], result).get("session_key")
+                        if isinstance(session_key, str) and session_key.startswith("websocket:career-"):
+                            await self._transport.send_session_updated(session_key.removeprefix("websocket:"), scope="metadata")
                     return WebUIRequestResult(result=result)
                 return WebUIRequestResult(
                     status=status,
