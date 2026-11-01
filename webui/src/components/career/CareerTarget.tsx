@@ -22,6 +22,11 @@ export function CareerTarget({ data, thread, busy, onCreate, onResumes, onJobs }
   const jobs = data.jobs.filter((record) => record.status === "confirmed");
   const currentResume = data.resumes.find((record) => record.id === thread?.resume_version_id);
   const currentJob = data.jobs.find((record) => record.id === thread?.job_version_id);
+  const availability = thread ? [
+    thread.conditions.days_per_week === null ? null : t("career.daysValue", { count: thread.conditions.days_per_week }),
+    thread.conditions.available_months === null ? null : t("career.monthsValue", { count: thread.conditions.available_months }),
+    thread.conditions.locations.join("、") || null,
+  ].filter(Boolean).join(" · ") : "";
 
   function create(event: FormEvent) {
     event.preventDefault();
@@ -41,13 +46,7 @@ export function CareerTarget({ data, thread, busy, onCreate, onResumes, onJobs }
       {thread && currentResume && currentJob ? <>
         <p className="break-words">{currentResume.name} · v{currentResume.version} → {currentJob.name} · v{currentJob.version}</p>
         {currentJob.company ? <p className="text-sm text-muted-foreground">{currentJob.company}</p> : null}
-        <p className="text-xs leading-relaxed text-muted-foreground">{t("career.conditionsSummary", { days: thread.conditions.days_per_week ?? t("career.unknown"), months: thread.conditions.available_months ?? t("career.unknown") })}
-          {thread.conditions.locations.length ? ` · ${thread.conditions.locations.join("、")}` : ""}</p>
-        <details className="text-sm"><summary className="cursor-pointer">{t("career.viewBoundMaterials")}</summary>
-          <div className="mt-3 grid min-w-0 gap-4 lg:grid-cols-2">{[currentResume, currentJob].map((record) =>
-            <div key={record.id} className="min-w-0"><h3 className="mb-2 font-medium">{record.name} · v{record.version}</h3>
-              <p className="max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-lg border bg-background p-3">{record.text}</p></div>)}</div>
-        </details>
+        <p className="text-xs leading-relaxed text-muted-foreground">{t("career.availabilityTitle")} · {availability || t("career.unknown")}</p>
         {!data.chat_available[thread.id] ? <p className="text-sm text-muted-foreground">{t("career.chatUnavailable")}</p> : null}
       </> : <p className="text-sm text-muted-foreground">{t("career.noTarget")}</p>}
     {resumes.length === 0 || jobs.length === 0 ? <div className="flex flex-wrap items-center gap-3 rounded-xl border border-dashed p-4">

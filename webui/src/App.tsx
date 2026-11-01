@@ -1207,7 +1207,7 @@ function Shell({
   }, [reportManagementSurface, theme]);
   const remoteConnectionsRef = useRef(remoteConnections);
   remoteConnectionsRef.current = remoteConnections;
-  const { client, getToken } = useClient();
+  const { client, getToken, webuiCapabilities } = useClient();
   useReconnectRuns(client, getToken);
   const {
     sessions,
@@ -2436,7 +2436,8 @@ function Shell({
       }
       setPendingDelete(null);
       if (deletingActive) {
-        navigate({
+        const currentRoute = readShellRoute();
+        navigate(currentRoute.view === "career" ? { ...currentRoute, activeKey: fallbackKey } : {
           view: "chat",
           activeKey: fallbackKey,
           settingsSection: "overview",
@@ -3071,6 +3072,8 @@ function Shell({
                         (session) => session.key === pane.key,
                       );
                       if (!paneSession) return null;
+                      // The career surface owns this transcript subscription while open.
+                      if (view === "career" && paneSession.chatId.startsWith("career-")) return null;
                       const paneScope = workspaceOverrides[paneSession.chatId]
                         ?? paneSession.workspaceScope
                         ?? workspaces?.default_scope
@@ -3192,6 +3195,7 @@ function Shell({
               title={pendingDelete.items[0]?.label ?? ""}
               count={pendingDelete.items.length}
               automations={pendingDelete.automations}
+              careerPreparation={webuiCapabilities.includes("webui.career.deletion.v1") && pendingDelete.items.some((item) => item.key.startsWith("websocket:career-"))}
               onCancel={() => setPendingDelete(null)}
               onConfirm={onConfirmDelete}
             />

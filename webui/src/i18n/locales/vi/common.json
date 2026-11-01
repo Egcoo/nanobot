@@ -487,72 +487,258 @@
         "rangeError": "Nhập số giây nguyên từ 1 đến {{max}}, hoặc chọn Không giới hạn thời gian."
       },
       "fields": {
-        "agents_defaults_timezone_mode": {"label": "Múi giờ hệ thống", "help": "Tắt để chọn múi giờ.\n\nTắt để chọn múi giờ thủ công."},
-        "agents_defaults_timezone": {"label": "Múi giờ", "help": "Độ lệch UTC theo ngày hiện tại.\n\nChọn múi giờ. Độ lệch UTC được tính theo ngày hiện tại."},
-        "agents_defaults_dream_enabled": {"label": "Sắp xếp bộ nhớ", "help": "Tự động sắp xếp bộ nhớ; tắt vẫn giữ bộ nhớ có sẵn.\n\nTự động sắp xếp thông tin hữu ích từ cuộc trò chuyện. Bộ nhớ hiện có vẫn được sử dụng khi tắt."},
-        "gateway_heartbeat_enabled": {"label": "Kiểm tra định kỳ", "help": "Kiểm tra tác vụ trong HEARTBEAT.md định kỳ.\n\nKiểm tra các tác vụ trong HEARTBEAT.md định kỳ."},
-        "gateway_heartbeat_interval_s": {"label": "Khoảng kiểm tra", "help": "Số giây giữa các lần kiểm tra heartbeat.\n\nGateway lên lịch kiểm tra định kỳ khi khởi động."},
-        "agents_defaults_max_tool_iterations": {"label": "Số lượt công cụ", "help": "Số lượt công cụ tối đa mỗi câu trả lời.\n\nSố lần trao đổi tối đa giữa mô hình và công cụ trong một lượt."},
-        "agents_defaults_max_concurrent_subagents": {"label": "Subagent đồng thời", "help": "Số subagent chạy đồng thời tối đa.\n\nSố tác nhân phụ tối đa chạy cùng lúc."},
-        "agents_defaults_max_tool_result_chars": {"label": "Độ dài kết quả", "help": "Giới hạn ký tự mỗi kết quả công cụ gửi đến mô hình.\n\nGiới hạn đầu ra công cụ được đưa vào ngữ cảnh mô hình."},
-        "agents_defaults_provider_retry_mode": {"label": "Tiếp tục thử lại", "help": "Thử lại khi lỗi có thể khắc phục; tắt để dùng cách thử lại tiêu chuẩn.\n\nTự động thử lại khi yêu cầu gửi đến mô hình gặp lỗi tạm thời. Tắt tùy chọn này để giới hạn số lần thử lại."},
-        "agents_defaults_tool_hint_max_length": {"label": "Độ dài tóm tắt", "help": "Giới hạn ký tự tóm tắt hoạt động công cụ.\n\nĐộ dài tối đa của gợi ý ngắn về hoạt động công cụ."},
-        "tools_max_session_messages_per_minute": {"label": "Tần suất tin nhắn", "help": "Số tin nhắn công cụ gửi đến một phiên mỗi phút tối đa.\n\nGiới hạn tần suất công cụ gửi tin nhắn vào cuộc trò chuyện."},
-        "agents_defaults_unified_session": {"label": "Phiên dùng chung", "help": "Chia sẻ lịch sử trò chuyện của một người dùng giữa các nền tảng.\n\nDùng chung một cuộc trò chuyện cho một người dùng trên nhiều nền tảng."},
-        "tools_exec_enable": {"label": "Công cụ shell", "help": "Cho phép agent chạy lệnh Shell.\n\nCho phép tác nhân chạy lệnh shell."},
-        "tools_file_enable": {"label": "Công cụ tệp", "help": "Cho phép công cụ đọc và chỉnh sửa tệp tích hợp.\n\nCho phép dùng công cụ đọc và chỉnh sửa tệp tích hợp."},
-        "tools_web_enable": {"label": "Truy cập web", "help": "Cho phép tìm kiếm web và đọc trang.\n\nCho phép tìm kiếm và tải nội dung trang web."},
-        "tools_cli_apps_enable": {"label": "Ứng dụng CLI", "help": "Cho phép cài đặt, quản lý và chạy ứng dụng CLI.\n\nCho phép tác nhân quản lý và chạy ứng dụng dòng lệnh."},
-        "tools_my_enable": {"label": "Xem cấu hình", "help": "Cho phép agent xem cấu hình của mình.\n\nCho phép tác nhân xem cấu hình của mình."},
-        "tools_my_allow_set": {"label": "Sửa cấu hình", "help": "Cho phép agent thay đổi cấu hình của mình.\n\nCho phép công cụ tự quản lý cập nhật cấu hình."},
-        "tools_exec_timeout": {"label": "Thời gian chạy lệnh", "help": "Giới hạn thời gian chạy mặc định cho lệnh shell.\n\nĐầu ra và việc chờ đợi không kéo dài giới hạn này. Chọn Không giới hạn thời gian để bỏ giới hạn thời gian chạy."},
-        "tools_exec_path_prepend": {"label": "Ưu tiên PATH", "help": "Tìm trong các thư mục này trước.\n\nCác thư mục thêm vào đầu PATH. Phân cách bằng dấu chấm phẩy trên Windows hoặc dấu hai chấm trên macOS và Linux."},
-        "tools_exec_path_append": {"label": "Bổ sung PATH", "help": "Tìm trong các thư mục này sau cùng.\n\nCác thư mục thêm vào cuối PATH. Phân cách bằng dấu chấm phẩy trên Windows hoặc dấu hai chấm trên macOS và Linux."},
-        "tools_exec_sandbox": {"label": "Hộp cát lệnh", "help": "Cô lập tiến trình lệnh; cần hệ thống hỗ trợ.\n\nDùng bwrap trên Linux hoặc Seatbelt trên macOS. Chỉ kiểm tra không gian làm việc không thể cô lập tiến trình."},
-        "tools_exec_sandbox_ro_binds": {"label": "Đường dẫn chỉ đọc", "help": "Thêm đường dẫn chỉ đọc, mỗi dòng một mục.\n\nĐường dẫn gắn thêm ở chế độ chỉ đọc, mỗi dòng một đường dẫn."},
-        "tools_exec_sandbox_rw_binds": {"label": "Đường dẫn cho phép ghi", "help": "Thêm đường dẫn cho phép ghi, mỗi dòng một mục.\n\nĐường dẫn gắn thêm cho phép ghi, mỗi dòng một đường dẫn."},
-        "tools_exec_allowed_env_keys": {"label": "Biến môi trường", "help": "Thêm biến truyền cho lệnh, mỗi dòng một tên.\n\nCác biến môi trường bổ sung được truyền cho lệnh, mỗi dòng một tên. Các biến cơ bản cần cho hoạt động vẫn được truyền."},
-        "tools_exec_allow_patterns": {"label": "Lệnh được phép", "help": "Chỉ chạy lệnh khớp hoàn toàn với quy tắc cho phép.\n\nMỗi dòng một biểu thức chính quy. Khi có quy tắc, từng phần của lệnh phải khớp hoàn toàn với ít nhất một quy tắc. Lệnh được phép sẽ bỏ qua quy tắc chặn tích hợp và bổ sung, nhưng vẫn chịu giới hạn mạng và không gian làm việc."},
-        "tools_exec_deny_patterns": {"label": "Lệnh bị chặn", "help": "Chặn lệnh khớp với các quy tắc này.\n\nQuy tắc chặn bổ sung dưới dạng biểu thức chính quy, mỗi dòng một quy tắc. Quy tắc cho phép được ưu tiên hơn cả quy tắc chặn tích hợp và bổ sung."},
-        "network_proxy": {"label": "Proxy chung", "help": "Địa chỉ dùng cho các tính năng đã bật proxy. 127.0.0.1 là máy chạy nanobot."},
-        "tools_web_use_proxy": {"label": "Dùng proxy", "help": "Dùng proxy chung để tìm kiếm web và đọc trang."},
-        "tools_web_user_agent": {"label": "Header User-Agent", "help": "User-Agent cho yêu cầu web; để trống để dùng mặc định.\n\nHeader User-Agent tùy chỉnh cho yêu cầu web. Để trống để dùng giá trị mặc định."},
-        "tools_restrict_to_workspace": {"label": "Giới hạn vùng làm việc", "help": "Giới hạn vùng làm việc chung; quyền trò chuyện WebUI được đặt riêng.\n\nChính sách công cụ toàn cục. Quyền của từng cuộc trò chuyện WebUI được đặt riêng."},
-        "tools_ssrf_whitelist": {"label": "IP được phép", "help": "IP hoặc dải CIDR được phép, mỗi dòng một mục.\n\nIP hoặc dải CIDR được miễn bảo vệ yêu cầu ra ngoài, mỗi dòng một mục."},
-        "tools_webui_allow_remote_package_install": {"label": "Cài đặt từ xa", "help": "Cho phép cài gói và kỹ năng từ xa; đặt trên máy chạy gateway.\n\nCho phép cài gói và kỹ năng từ WebUI từ xa. Cài đặt này phải được thay đổi trên máy chạy gateway."},
-        "tools_cli_apps_install_timeout": {"label": "Thời hạn cài đặt", "help": "Số giây cài ứng dụng CLI tối đa.\n\nThời gian tối đa để cài ứng dụng CLI."},
-        "tools_cli_apps_run_timeout": {"label": "Thời hạn chạy", "help": "Số giây chạy lệnh CLI tối đa.\n\nThời gian chạy tối đa của lệnh ứng dụng CLI."},
-        "tools_cli_apps_catalog_ttl_seconds": {"label": "Thời gian cache", "help": "Số giây cache danh sách ứng dụng CLI.\n\nThời gian giữ danh mục ứng dụng CLI trong bộ nhớ đệm."},
-        "gateway_host": {"label": "Địa chỉ gateway", "help": "Địa chỉ gateway; đặt địa chỉ lắng nghe WebUI riêng.\n\nĐịa chỉ gateway dùng để nhận kết nối. Địa chỉ WebSocket và WebUI được cấu hình trong Kênh → WebSocket."},
-        "gateway_port": {"label": "Cổng gateway", "help": "Cổng gateway; tham số khởi chạy được ưu tiên.\n\nCổng được lưu. Tham số dòng lệnh được ưu tiên."},
-        "gateway_restart_mode": {"label": "Chế độ khởi động lại", "help": "Chọn cách khởi động lại; Tự động dựa theo môi trường.\n\nCách khởi động lại tiến trình. Chế độ tự động chọn theo môi trường máy chủ."},
-        "api_host": {"label": "Địa chỉ API", "help": "Đặt khóa trước khi cho phép truy cập mạng; khởi động lại API sau thay đổi.\n\nCần khóa API khi nhận kết nối trên địa chỉ khác localhost. Đặt khóa trong Hệ thống rồi khởi động lại dịch vụ API để áp dụng thay đổi."},
-        "api_timeout": {"label": "Thời hạn API", "help": "Số giây mỗi yêu cầu API tối đa; khởi động lại để áp dụng.\n\nThời gian tối đa của yêu cầu. Khởi động lại dịch vụ API để áp dụng."},
-        "tools_image_generation_save_dir": {"label": "Thư mục lưu", "help": "Đường dẫn tương đối trong thư mục media; không chuyển ảnh có sẵn.\n\nĐường dẫn tương đối trong thư mục phương tiện của nanobot. Ảnh hiện có không bị di chuyển."}
+        "agents_defaults_timezone_mode": {
+          "label": "Múi giờ hệ thống",
+          "help": "Tắt để chọn múi giờ.\n\nTắt để chọn múi giờ thủ công."
+        },
+        "agents_defaults_timezone": {
+          "label": "Múi giờ",
+          "help": "Độ lệch UTC theo ngày hiện tại.\n\nChọn múi giờ. Độ lệch UTC được tính theo ngày hiện tại."
+        },
+        "agents_defaults_dream_enabled": {
+          "label": "Sắp xếp bộ nhớ",
+          "help": "Tự động sắp xếp bộ nhớ; tắt vẫn giữ bộ nhớ có sẵn.\n\nTự động sắp xếp thông tin hữu ích từ cuộc trò chuyện. Bộ nhớ hiện có vẫn được sử dụng khi tắt."
+        },
+        "gateway_heartbeat_enabled": {
+          "label": "Kiểm tra định kỳ",
+          "help": "Kiểm tra tác vụ trong HEARTBEAT.md định kỳ.\n\nKiểm tra các tác vụ trong HEARTBEAT.md định kỳ."
+        },
+        "gateway_heartbeat_interval_s": {
+          "label": "Khoảng kiểm tra",
+          "help": "Số giây giữa các lần kiểm tra heartbeat.\n\nGateway lên lịch kiểm tra định kỳ khi khởi động."
+        },
+        "agents_defaults_max_tool_iterations": {
+          "label": "Số lượt công cụ",
+          "help": "Số lượt công cụ tối đa mỗi câu trả lời.\n\nSố lần trao đổi tối đa giữa mô hình và công cụ trong một lượt."
+        },
+        "agents_defaults_max_concurrent_subagents": {
+          "label": "Subagent đồng thời",
+          "help": "Số subagent chạy đồng thời tối đa.\n\nSố tác nhân phụ tối đa chạy cùng lúc."
+        },
+        "agents_defaults_max_tool_result_chars": {
+          "label": "Độ dài kết quả",
+          "help": "Giới hạn ký tự mỗi kết quả công cụ gửi đến mô hình.\n\nGiới hạn đầu ra công cụ được đưa vào ngữ cảnh mô hình."
+        },
+        "agents_defaults_provider_retry_mode": {
+          "label": "Tiếp tục thử lại",
+          "help": "Thử lại khi lỗi có thể khắc phục; tắt để dùng cách thử lại tiêu chuẩn.\n\nTự động thử lại khi yêu cầu gửi đến mô hình gặp lỗi tạm thời. Tắt tùy chọn này để giới hạn số lần thử lại."
+        },
+        "agents_defaults_tool_hint_max_length": {
+          "label": "Độ dài tóm tắt",
+          "help": "Giới hạn ký tự tóm tắt hoạt động công cụ.\n\nĐộ dài tối đa của gợi ý ngắn về hoạt động công cụ."
+        },
+        "tools_max_session_messages_per_minute": {
+          "label": "Tần suất tin nhắn",
+          "help": "Số tin nhắn công cụ gửi đến một phiên mỗi phút tối đa.\n\nGiới hạn tần suất công cụ gửi tin nhắn vào cuộc trò chuyện."
+        },
+        "agents_defaults_unified_session": {
+          "label": "Phiên dùng chung",
+          "help": "Chia sẻ lịch sử trò chuyện của một người dùng giữa các nền tảng.\n\nDùng chung một cuộc trò chuyện cho một người dùng trên nhiều nền tảng."
+        },
+        "tools_exec_enable": {
+          "label": "Công cụ shell",
+          "help": "Cho phép agent chạy lệnh Shell.\n\nCho phép tác nhân chạy lệnh shell."
+        },
+        "tools_file_enable": {
+          "label": "Công cụ tệp",
+          "help": "Cho phép công cụ đọc và chỉnh sửa tệp tích hợp.\n\nCho phép dùng công cụ đọc và chỉnh sửa tệp tích hợp."
+        },
+        "tools_web_enable": {
+          "label": "Truy cập web",
+          "help": "Cho phép tìm kiếm web và đọc trang.\n\nCho phép tìm kiếm và tải nội dung trang web."
+        },
+        "tools_cli_apps_enable": {
+          "label": "Ứng dụng CLI",
+          "help": "Cho phép cài đặt, quản lý và chạy ứng dụng CLI.\n\nCho phép tác nhân quản lý và chạy ứng dụng dòng lệnh."
+        },
+        "tools_my_enable": {
+          "label": "Xem cấu hình",
+          "help": "Cho phép agent xem cấu hình của mình.\n\nCho phép tác nhân xem cấu hình của mình."
+        },
+        "tools_my_allow_set": {
+          "label": "Sửa cấu hình",
+          "help": "Cho phép agent thay đổi cấu hình của mình.\n\nCho phép công cụ tự quản lý cập nhật cấu hình."
+        },
+        "tools_exec_timeout": {
+          "label": "Thời gian chạy lệnh",
+          "help": "Giới hạn thời gian chạy mặc định cho lệnh shell.\n\nĐầu ra và việc chờ đợi không kéo dài giới hạn này. Chọn Không giới hạn thời gian để bỏ giới hạn thời gian chạy."
+        },
+        "tools_exec_path_prepend": {
+          "label": "Ưu tiên PATH",
+          "help": "Tìm trong các thư mục này trước.\n\nCác thư mục thêm vào đầu PATH. Phân cách bằng dấu chấm phẩy trên Windows hoặc dấu hai chấm trên macOS và Linux."
+        },
+        "tools_exec_path_append": {
+          "label": "Bổ sung PATH",
+          "help": "Tìm trong các thư mục này sau cùng.\n\nCác thư mục thêm vào cuối PATH. Phân cách bằng dấu chấm phẩy trên Windows hoặc dấu hai chấm trên macOS và Linux."
+        },
+        "tools_exec_sandbox": {
+          "label": "Hộp cát lệnh",
+          "help": "Cô lập tiến trình lệnh; cần hệ thống hỗ trợ.\n\nDùng bwrap trên Linux hoặc Seatbelt trên macOS. Chỉ kiểm tra không gian làm việc không thể cô lập tiến trình."
+        },
+        "tools_exec_sandbox_ro_binds": {
+          "label": "Đường dẫn chỉ đọc",
+          "help": "Thêm đường dẫn chỉ đọc, mỗi dòng một mục.\n\nĐường dẫn gắn thêm ở chế độ chỉ đọc, mỗi dòng một đường dẫn."
+        },
+        "tools_exec_sandbox_rw_binds": {
+          "label": "Đường dẫn cho phép ghi",
+          "help": "Thêm đường dẫn cho phép ghi, mỗi dòng một mục.\n\nĐường dẫn gắn thêm cho phép ghi, mỗi dòng một đường dẫn."
+        },
+        "tools_exec_allowed_env_keys": {
+          "label": "Biến môi trường",
+          "help": "Thêm biến truyền cho lệnh, mỗi dòng một tên.\n\nCác biến môi trường bổ sung được truyền cho lệnh, mỗi dòng một tên. Các biến cơ bản cần cho hoạt động vẫn được truyền."
+        },
+        "tools_exec_allow_patterns": {
+          "label": "Lệnh được phép",
+          "help": "Chỉ chạy lệnh khớp hoàn toàn với quy tắc cho phép.\n\nMỗi dòng một biểu thức chính quy. Khi có quy tắc, từng phần của lệnh phải khớp hoàn toàn với ít nhất một quy tắc. Lệnh được phép sẽ bỏ qua quy tắc chặn tích hợp và bổ sung, nhưng vẫn chịu giới hạn mạng và không gian làm việc."
+        },
+        "tools_exec_deny_patterns": {
+          "label": "Lệnh bị chặn",
+          "help": "Chặn lệnh khớp với các quy tắc này.\n\nQuy tắc chặn bổ sung dưới dạng biểu thức chính quy, mỗi dòng một quy tắc. Quy tắc cho phép được ưu tiên hơn cả quy tắc chặn tích hợp và bổ sung."
+        },
+        "network_proxy": {
+          "label": "Proxy chung",
+          "help": "Địa chỉ dùng cho các tính năng đã bật proxy. 127.0.0.1 là máy chạy nanobot."
+        },
+        "tools_web_use_proxy": {
+          "label": "Dùng proxy",
+          "help": "Dùng proxy chung để tìm kiếm web và đọc trang."
+        },
+        "tools_web_user_agent": {
+          "label": "Header User-Agent",
+          "help": "User-Agent cho yêu cầu web; để trống để dùng mặc định.\n\nHeader User-Agent tùy chỉnh cho yêu cầu web. Để trống để dùng giá trị mặc định."
+        },
+        "tools_restrict_to_workspace": {
+          "label": "Giới hạn vùng làm việc",
+          "help": "Giới hạn vùng làm việc chung; quyền trò chuyện WebUI được đặt riêng.\n\nChính sách công cụ toàn cục. Quyền của từng cuộc trò chuyện WebUI được đặt riêng."
+        },
+        "tools_ssrf_whitelist": {
+          "label": "IP được phép",
+          "help": "IP hoặc dải CIDR được phép, mỗi dòng một mục.\n\nIP hoặc dải CIDR được miễn bảo vệ yêu cầu ra ngoài, mỗi dòng một mục."
+        },
+        "tools_webui_allow_remote_package_install": {
+          "label": "Cài đặt từ xa",
+          "help": "Cho phép cài gói và kỹ năng từ xa; đặt trên máy chạy gateway.\n\nCho phép cài gói và kỹ năng từ WebUI từ xa. Cài đặt này phải được thay đổi trên máy chạy gateway."
+        },
+        "tools_cli_apps_install_timeout": {
+          "label": "Thời hạn cài đặt",
+          "help": "Số giây cài ứng dụng CLI tối đa.\n\nThời gian tối đa để cài ứng dụng CLI."
+        },
+        "tools_cli_apps_run_timeout": {
+          "label": "Thời hạn chạy",
+          "help": "Số giây chạy lệnh CLI tối đa.\n\nThời gian chạy tối đa của lệnh ứng dụng CLI."
+        },
+        "tools_cli_apps_catalog_ttl_seconds": {
+          "label": "Thời gian cache",
+          "help": "Số giây cache danh sách ứng dụng CLI.\n\nThời gian giữ danh mục ứng dụng CLI trong bộ nhớ đệm."
+        },
+        "gateway_host": {
+          "label": "Địa chỉ gateway",
+          "help": "Địa chỉ gateway; đặt địa chỉ lắng nghe WebUI riêng.\n\nĐịa chỉ gateway dùng để nhận kết nối. Địa chỉ WebSocket và WebUI được cấu hình trong Kênh → WebSocket."
+        },
+        "gateway_port": {
+          "label": "Cổng gateway",
+          "help": "Cổng gateway; tham số khởi chạy được ưu tiên.\n\nCổng được lưu. Tham số dòng lệnh được ưu tiên."
+        },
+        "gateway_restart_mode": {
+          "label": "Chế độ khởi động lại",
+          "help": "Chọn cách khởi động lại; Tự động dựa theo môi trường.\n\nCách khởi động lại tiến trình. Chế độ tự động chọn theo môi trường máy chủ."
+        },
+        "api_host": {
+          "label": "Địa chỉ API",
+          "help": "Đặt khóa trước khi cho phép truy cập mạng; khởi động lại API sau thay đổi.\n\nCần khóa API khi nhận kết nối trên địa chỉ khác localhost. Đặt khóa trong Hệ thống rồi khởi động lại dịch vụ API để áp dụng thay đổi."
+        },
+        "api_timeout": {
+          "label": "Thời hạn API",
+          "help": "Số giây mỗi yêu cầu API tối đa; khởi động lại để áp dụng.\n\nThời gian tối đa của yêu cầu. Khởi động lại dịch vụ API để áp dụng."
+        },
+        "tools_image_generation_save_dir": {
+          "label": "Thư mục lưu",
+          "help": "Đường dẫn tương đối trong thư mục media; không chuyển ảnh có sẵn.\n\nĐường dẫn tương đối trong thư mục phương tiện của nanobot. Ảnh hiện có không bị di chuyển."
+        }
       },
       "groups": {
-        "chat": {"title": "Quyền WebUI", "help": "Đặt quyền truy cập dịch vụ cục bộ và quyền trò chuyện mặc định.\n\nTruy cập dịch vụ cục bộ và quyền trò chuyện mặc định."},
-        "identity": {"title": "Múi giờ", "help": "Chọn múi giờ cho tác vụ theo lịch."},
-        "memory": {"title": "Bộ nhớ", "help": "Bật hoặc tắt tự động sắp xếp bộ nhớ."},
-        "heartbeat": {"title": "Lịch kiểm tra định kỳ", "help": "Đặt kiểm tra tác vụ định kỳ."},
-        "execution": {"title": "Giới hạn chạy", "help": "Đặt giới hạn công cụ và thử lại yêu cầu."},
-        "sessions": {"title": "Cuộc trò chuyện", "help": "Đặt chia sẻ trò chuyện giữa các nền tảng."},
-        "tools": {"title": "Công cụ tích hợp", "help": "Chọn công cụ agent được phép dùng."},
-        "shell": {"title": "Shell và sandbox", "help": "Đặt thời hạn lệnh, môi trường và quy tắc truy cập."},
-        "proxy": {"title": "Proxy chung", "help": "Đặt một địa chỉ cho các tính năng dùng proxy."},
-        "network": {"title": "Kết nối web", "help": "Đặt tùy chọn proxy và User-Agent cho yêu cầu web."},
-        "safety": {"title": "Quyền chung", "help": "Đặt giới hạn vùng làm việc, ngoại lệ mạng và cài đặt từ xa.\n\nGiới hạn không gian làm việc, mạng riêng và cài đặt từ xa."},
-        "cli": {"title": "Giới hạn CLI", "help": "Đặt thời hạn cài đặt, chạy và thời gian cache danh sách.\n\nGiới hạn thời gian cài đặt, thực thi và lưu đệm danh mục."},
-        "gateway": {"title": "Gateway", "help": "Đặt cách triển khai và khởi động lại."},
-        "api": {"title": "Thiết lập API", "help": "Đặt địa chỉ lắng nghe và thời hạn yêu cầu."},
-        "storage": {"title": "Lưu trữ ảnh", "help": "Chọn nơi lưu ảnh được tạo."},
-        "maintenance": {"title": "Sắp xếp bộ nhớ", "help": ""},
-        "web": {"title": "Truy cập web", "help": ""},
-        "applications": {"title": "Ứng dụng CLI", "help": ""}
+        "chat": {
+          "title": "Quyền WebUI",
+          "help": "Đặt quyền truy cập dịch vụ cục bộ và quyền trò chuyện mặc định.\n\nTruy cập dịch vụ cục bộ và quyền trò chuyện mặc định."
+        },
+        "identity": {
+          "title": "Múi giờ",
+          "help": "Chọn múi giờ cho tác vụ theo lịch."
+        },
+        "memory": {
+          "title": "Bộ nhớ",
+          "help": "Bật hoặc tắt tự động sắp xếp bộ nhớ."
+        },
+        "heartbeat": {
+          "title": "Lịch kiểm tra định kỳ",
+          "help": "Đặt kiểm tra tác vụ định kỳ."
+        },
+        "execution": {
+          "title": "Giới hạn chạy",
+          "help": "Đặt giới hạn công cụ và thử lại yêu cầu."
+        },
+        "sessions": {
+          "title": "Cuộc trò chuyện",
+          "help": "Đặt chia sẻ trò chuyện giữa các nền tảng."
+        },
+        "tools": {
+          "title": "Công cụ tích hợp",
+          "help": "Chọn công cụ agent được phép dùng."
+        },
+        "shell": {
+          "title": "Shell và sandbox",
+          "help": "Đặt thời hạn lệnh, môi trường và quy tắc truy cập."
+        },
+        "proxy": {
+          "title": "Proxy chung",
+          "help": "Đặt một địa chỉ cho các tính năng dùng proxy."
+        },
+        "network": {
+          "title": "Kết nối web",
+          "help": "Đặt tùy chọn proxy và User-Agent cho yêu cầu web."
+        },
+        "safety": {
+          "title": "Quyền chung",
+          "help": "Đặt giới hạn vùng làm việc, ngoại lệ mạng và cài đặt từ xa.\n\nGiới hạn không gian làm việc, mạng riêng và cài đặt từ xa."
+        },
+        "cli": {
+          "title": "Giới hạn CLI",
+          "help": "Đặt thời hạn cài đặt, chạy và thời gian cache danh sách.\n\nGiới hạn thời gian cài đặt, thực thi và lưu đệm danh mục."
+        },
+        "gateway": {
+          "title": "Gateway",
+          "help": "Đặt cách triển khai và khởi động lại."
+        },
+        "api": {
+          "title": "Thiết lập API",
+          "help": "Đặt địa chỉ lắng nghe và thời hạn yêu cầu."
+        },
+        "storage": {
+          "title": "Lưu trữ ảnh",
+          "help": "Chọn nơi lưu ảnh được tạo."
+        },
+        "maintenance": {
+          "title": "Sắp xếp bộ nhớ",
+          "help": ""
+        },
+        "web": {
+          "title": "Truy cập web",
+          "help": ""
+        },
+        "applications": {
+          "title": "Ứng dụng CLI",
+          "help": ""
+        }
       },
-      "save": "Lưu thay đổi", "saving": "Đang lưu…", "discard": "Hủy thay đổi", "saved": "Đã lưu.",
-      "restart": "Khởi động lại nanobot", "restartHelp": "Khởi động lại để áp dụng thay đổi. Tham số dòng lệnh và biến môi trường có thể được ưu tiên.",
-      "search": "Tìm cài đặt nâng cao", "noResults": "Không có cài đặt phù hợp.", "pending": "Thay đổi chưa lưu",
+      "save": "Lưu thay đổi",
+      "saving": "Đang lưu…",
+      "discard": "Hủy thay đổi",
+      "saved": "Đã lưu.",
+      "restart": "Khởi động lại nanobot",
+      "restartHelp": "Khởi động lại để áp dụng thay đổi. Tham số dòng lệnh và biến môi trường có thể được ưu tiên.",
+      "search": "Tìm cài đặt nâng cao",
+      "noResults": "Không có cài đặt phù hợp.",
+      "pending": "Thay đổi chưa lưu",
       "idleCompaction": {
         "label": "Tự động nén khi không hoạt động",
         "help": "Tự động nén ngữ cảnh khi hết thời gian chờ để giảm lượng token dùng cho các yêu cầu tiếp theo.",
@@ -560,9 +746,15 @@
         "minutes": "phút",
         "numberError": "Nhập số phút là số nguyên không âm."
       },
-      "numberError": "Nhập số hợp lệ trong phạm vi cho phép.", "activeModel": "Dùng mô hình hiện tại", "none": "Không có",
-      "auto": "Tự động", "manual": "Thủ công", "standard": "Tiêu chuẩn", "persistent": "Liên tục",
-      "unavailable": "Cập nhật gateway để chỉnh sửa các cài đặt này.", "advancedOptions": "Tùy chọn nâng cao"
+      "numberError": "Nhập số hợp lệ trong phạm vi cho phép.",
+      "activeModel": "Dùng mô hình hiện tại",
+      "none": "Không có",
+      "auto": "Tự động",
+      "manual": "Thủ công",
+      "standard": "Tiêu chuẩn",
+      "persistent": "Liên tục",
+      "unavailable": "Cập nhật gateway để chỉnh sửa các cài đặt này.",
+      "advancedOptions": "Tùy chọn nâng cao"
     },
     "backToChat": "Quay lại chat",
     "sidebar": {
@@ -1214,17 +1406,31 @@
       }
     },
     "api": {
-      "title": "Máy chủ API", "openaiCompatible": "API tương thích OpenAI", "description": "Kết nối qua API tương thích OpenAI.",
-      "start": "Khởi động API", "starting": "Đang khởi động...", "stop": "Dừng", "stopping": "Đang dừng...",
-      "access": "Truy cập", "thisDevice": "Thiết bị này", "localNetwork": "Mạng nội bộ",
-      "localHelp": "Chỉ thiết bị này có thể kết nối.", "networkHelp": "Truy cập LAN cần khóa API.\n\nThiết bị khác có thể kết nối; cần khóa API.",
-      "port": "Cổng", "portHelp": "Cổng cục bộ dịch vụ API sử dụng.", "apiKey": "Khóa API", "apiKeyHelp": "Gửi khóa dưới dạng Bearer Token.",
-      "apiKeyRequired": "Bắt buộc trước khi mở API ra mạng.", "apiKeyPlaceholder": "Nhập khóa API",
+      "title": "Máy chủ API",
+      "openaiCompatible": "API tương thích OpenAI",
+      "description": "Kết nối qua API tương thích OpenAI.",
+      "start": "Khởi động API",
+      "starting": "Đang khởi động...",
+      "stop": "Dừng",
+      "stopping": "Đang dừng...",
+      "access": "Truy cập",
+      "thisDevice": "Thiết bị này",
+      "localNetwork": "Mạng nội bộ",
+      "localHelp": "Chỉ thiết bị này có thể kết nối.",
+      "networkHelp": "Truy cập LAN cần khóa API.\n\nThiết bị khác có thể kết nối; cần khóa API.",
+      "port": "Cổng",
+      "portHelp": "Cổng cục bộ dịch vụ API sử dụng.",
+      "apiKey": "Khóa API",
+      "apiKeyHelp": "Gửi khóa dưới dạng Bearer Token.",
+      "apiKeyRequired": "Bắt buộc trước khi mở API ra mạng.",
+      "apiKeyPlaceholder": "Nhập khóa API",
       "autoInstall": "Các gói cần thiết cho máy chủ API sẽ được cài tự động khi khởi động."
     },
     "observability": {
-      "title": "Theo dõi chạy", "configured": "nanobot đã có thông tin xác thực để ghi lại quá trình xử lý.",
-      "environment": "Đặt LANGFUSE_SECRET_KEY và LANGFUSE_PUBLIC_KEY rồi khởi động lại nanobot.", "enable": "Bật theo dõi"
+      "title": "Theo dõi chạy",
+      "configured": "nanobot đã có thông tin xác thực để ghi lại quá trình xử lý.",
+      "environment": "Đặt LANGFUSE_SECRET_KEY và LANGFUSE_PUBLIC_KEY rồi khởi động lại nanobot.",
+      "enable": "Bật theo dõi"
     },
     "legal": {
       "thirdPartyBrands": "Tên sản phẩm, logo và thương hiệu thuộc về chủ sở hữu tương ứng. Việc sử dụng chỉ nhằm nhận diện và không ngụ ý được xác nhận."
@@ -1750,7 +1956,8 @@
       "disabled": "Đã tạm dừng",
       "local": "Đang chờ kích hoạt",
       "none": "Không có lần chạy tiếp theo"
-    }
+    },
+    "careerDescription": "Bản ghi chuẩn bị và công việc liên quan cũng sẽ bị xóa khỏi bàn làm việc. Hồ sơ và vị trí trong thư viện vẫn được giữ lại."
   },
   "connection": {
     "idle": "Rảnh",
@@ -2169,8 +2376,8 @@
     "copyReply": "Sao chép",
     "copiedReply": "Đã sao chép",
     "turnLatencyTitle": "Thời gian phản hồi (end-to-end)",
-      "fileEditViewDiff": "Xem thay đổi",
-      "fileEditViewLargeDiff": "Mở rộng thay đổi",
+    "fileEditViewDiff": "Xem thay đổi",
+    "fileEditViewLargeDiff": "Mở rộng thay đổi",
     "fileEditUnchangedLinesHidden": "Đã ẩn {{count}} dòng không đổi",
     "fileEditShowMoreLines": "Hiển thị thêm {{count}} dòng",
     "fileEditShowFewerLines": "Hiển thị ít dòng hơn",
@@ -2637,6 +2844,43 @@
     "currentUse": "Đang sử dụng",
     "viewOnlyHint": "Xem phiên bản không làm thay đổi tài liệu của lần chuẩn bị này.",
     "textSource": "Văn bản đã dán",
-    "addedAt": "Ngày thêm"
+    "addedAt": "Ngày thêm",
+    "modelMaterials": "Xem tài liệu tham khảo",
+    "privacyHint": "Thông tin liên hệ thông dụng và đường dẫn cục bộ đã được ẩn. Chỉ gửi tài liệu của lần chuẩn bị này; hãy kiểm tra nội dung bên dưới.",
+    "contextTruncated": "Một phần tài liệu đã được rút gọn. Bạn có thể bổ sung trong cuộc trò chuyện.",
+    "chatLoadError": "Không thể tải tài liệu hoặc cuộc trò chuyện. Hãy làm mới để thử lại.",
+    "chatFailure": "Lượt trao đổi chưa hoàn tất. Kiểm tra kết nối hoặc cấu hình mô hình rồi hỏi lại.",
+    "olderMessages": "Tải tin nhắn trước",
+    "replyMaterials": "Tài liệu: {{resume}} · v{{resumeVersion}} / {{job}} · v{{jobVersion}}",
+    "chatWelcome": "Tài liệu đã sẵn sàng. Hãy hỏi nên ưu tiên chuẩn bị gì cho vị trí này dựa trên kinh nghiệm của bạn.",
+    "chatInput": "Hỏi trợ lý tìm việc",
+    "stop": "Dừng trả lời",
+    "availabilityTitle": "Điều kiện làm việc lần này",
+    "availabilitySource": "Các điều kiện đã nhập khi tạo lần chuẩn bị này.",
+    "availabilityDays": "Số ngày có thể làm mỗi tuần",
+    "availabilityMonths": "Thời gian thực tập liên tục",
+    "availabilityDate": "Ngày có thể bắt đầu sớm nhất",
+    "availabilityLocations": "Địa điểm mong muốn",
+    "daysValue": "{{count}} ngày mỗi tuần",
+    "monthsValue": "{{count}} tháng",
+    "openResumeLibrary": "Mở danh sách hồ sơ",
+    "openJobLibrary": "Mở danh sách vị trí",
+    "resumeFacts": "Thông tin bổ sung trong hồ sơ",
+    "jobFacts": "Thông tin bổ sung về vị trí",
+    "conditionMismatch": "Điều kiện làm việc khác hồ sơ",
+    "conditionMismatchHint": "Lần này dùng điều kiện đã nhập. Hãy kiểm tra hồ sơ; nội dung đã xác nhận không tự thay đổi.",
+    "conditionComparison": "Đã nhập: {{selected}}; hồ sơ: {{resume}}.",
+    "conditionEvidence": "Trích hồ sơ: “{{text}}”",
+    "education": "Học vấn",
+    "skills": "Kỹ năng",
+    "projects": "Dự án",
+    "interviewExperience": "Kinh nghiệm phỏng vấn người dùng",
+    "valueYes": "Có",
+    "valueNo": "Không",
+    "daysValue_one": "{{count}} ngày mỗi tuần",
+    "daysValue_other": "{{count}} ngày mỗi tuần",
+    "monthsValue_one": "{{count}} tháng",
+    "monthsValue_other": "{{count}} tháng",
+    "plansUnsupported": "Máy chủ này chưa hỗ trợ lưu kế hoạch. Bạn vẫn có thể tiếp tục trò chuyện."
   }
 }

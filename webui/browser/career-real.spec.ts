@@ -4,17 +4,19 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import net from "node:net";
 import { once } from "node:events";
+import { randomInt } from "node:crypto";
 import { test, expect, type Page } from "@playwright/test";
 
 const repo = path.resolve(import.meta.dirname, "../..");
-const root = mkdtempSync(path.join(tmpdir(), "nanobot-career-browser-"));
+let root: string;
 let server: ChildProcessWithoutNullStreams;
 let base: string;
 let port: number;
 
 async function start() {
   const python = process.env.NANOBOT_TEST_PYTHON ?? path.join(repo, process.platform === "win32" ? ".venv/Scripts/python.exe" : ".venv/bin/python");
-  server = spawn(python, ["-X", "utf8", "-m", "scripts.career_browser_gateway", "--root", root, "--port", String(port)], {
+  server = spawn(python, ["-X", "utf8", "-m", "scripts.career_browser_gateway", "--root", root, "--port", String(port),
+    ...(process.env.NANOBOT_CAREER_LIVE_MODEL === "1" ? ["--configured-model"] : [])], {
     cwd: repo, windowsHide: true, stdio: "pipe",
   });
   await new Promise<void>((resolve, reject) => {
@@ -36,15 +38,211 @@ async function stop() {
 }
 function nav(page: Page, name: string) { return page.getByRole("navigation", { name: "求职页面" }).getByRole("button", { name, exact: true }); }
 
-test.beforeAll(async () => {
-  const socket = net.createServer(); socket.listen(0, "127.0.0.1"); await once(socket, "listening");
-  const address = socket.address();
-  if (!address || typeof address === "string") throw new Error("No local test port");
-  port = address.port; await new Promise<void>((resolve) => socket.close(() => resolve()));
+test.beforeEach(async () => {
+  root = mkdtempSync(path.join(tmpdir(), "nanobot-career-browser-"));
+  // Avoid OS-selected low ports such as 5061, which Chrome blocks for HTTP.
+  port = 0;
+  for (let attempt = 0; attempt < 20; attempt++) {
+    const socket = net.createServer();
+    const candidate = randomInt(20_000, 60_000);
+    try {
+      socket.listen(candidate, "127.0.0.1");
+      await once(socket, "listening");
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "EADDRINUSE") throw error;
+      continue;
+    }
+    port = candidate;
+    await new Promise<void>((resolve) => socket.close(() => resolve()));
+    break;
+  }
+  if (!port) throw new Error("No local test port available");
   base = `http://127.0.0.1:${port}`;
   await start();
 });
-test.afterAll(async () => { if (server) await stop(); });
+test.afterEach(async () => { if (server) await stop(); });
+
+async function prepareConversation(page: Page) {
+  await page.addInitScript(() => { localStorage.setItem("nanobot.locale", "zh-CN"); localStorage.setItem("nanobot-webui.theme", "dark"); });
+  await page.goto(`${base}/#/career`);
+  await nav(page, "我的简历").click();
+  const resume = page.getByRole("form", { name: "简历编辑" });
+  await resume.getByLabel("名称", { exact: true }).fill("工程对话简历");
+  await resume.getByLabel("简历正文").fill("工程虚构资料：唯一项目代号 CV_A7，做过一个课程资料问答助手。用户访谈经历尚未说明。\n到岗安排：每周 4 天，连续 3 个月。\n邮箱：private@example.com\n手机：13800138000");
+  await resume.getByRole("button", { name: "保存草稿", exact: true }).click();
+  await resume.getByRole("button", { name: "确认使用", exact: true }).click();
+  await expect(resume.getByLabel("简历正文")).toHaveAttribute("readonly");
+  await nav(page, "岗位库").click();
+  const job = page.getByRole("form", { name: "岗位编辑" });
+  await job.getByLabel("岗位名称").fill("JOB_B4");
+  await job.getByLabel("岗位原文").fill("工程虚构岗位 JOB_B4：AI 产品经理实习生，要求用户访谈经历，每周至少 4 天，连续 3 个月。");
+  await job.getByRole("button", { name: "保存草稿", exact: true }).click();
+  await job.getByRole("button", { name: "确认使用", exact: true }).click();
+  await expect(job.getByLabel("岗位原文")).toHaveAttribute("readonly");
+  await nav(page, "工作台").click();
+  const choose = page.getByRole("form", { name: "选择准备资料" });
+  await choose.getByLabel("简历版本").selectOption({ label: "工程对话简历 · v1" });
+  await choose.getByLabel("岗位版本").selectOption({ label: "JOB_B4 · v1" });
+  await choose.getByText("到岗条件（选填）", { exact: true }).click();
+  await choose.getByLabel("每周到岗天数（选填）").fill("3");
+  await choose.getByRole("button", { name: "进入准备记录" }).click();
+  await expect(page.getByRole("textbox", { name: "向求职助手提问" })).toBeEnabled();
+}
+
+test("career conversation sends the selected materials and preserves sources across replies and reload", async ({ page }, info) => {
+  test.setTimeout(process.env.NANOBOT_CAREER_LIVE_MODEL === "1" ? 180_000 : 90_000);
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.setViewportSize({ width: 1440, height: 1100 });
+  await prepareConversation(page);
+  const conversation = page.getByRole("region", { name: "求职对话" });
+  await conversation.getByText("查看本次参考资料", { exact: true }).click();
+  await expect(conversation).toContainText("CV_A7");
+  await expect(conversation.getByRole("region", { name: "本次到岗条件" })).toContainText("每周 3 天");
+  await expect(conversation.getByRole("note")).toContainText("本次填写：每周 3 天；简历原文：每周 4 天。");
+  await expect(page.locator("p").filter({ hasText: "工程虚构资料：唯一项目代号 CV_A7" })).toHaveCount(1);
+  await expect(conversation).not.toContainText("private@example.com");
+  await expect(conversation).not.toContainText("13800138000");
+  await page.screenshot({ path: info.outputPath("career-reference-materials.png"), fullPage: true });
+  await page.setViewportSize({ width: 320, height: 1000 });
+  await expect(conversation.getByRole("region", { name: "本次到岗条件" })).toContainText("每周 3 天");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await page.screenshot({ path: info.outputPath("career-reference-materials-mobile.png"), fullPage: true });
+  await page.setViewportSize({ width: 1440, height: 1100 });
+  await conversation.getByText("查看本次参考资料", { exact: true }).click();
+  await conversation.getByRole("textbox", { name: "向求职助手提问" }).fill("请告诉我本次简历里的唯一项目代号，以及岗位原文里的岗位代号。只回答两个代号，控制在 60 字内。");
+  await conversation.getByRole("button", { name: "发送", exact: true }).click();
+  await expect(conversation.getByTestId("career-turn-source")).toHaveCount(1, { timeout: 90_000 });
+  await expect(conversation.getByRole("button", { name: "发送", exact: true })).toBeVisible({ timeout: 90_000 });
+  await expect(conversation.getByTestId("career-turn-source").first()).toHaveAttribute("data-analysis-status", "succeeded");
+  await expect(conversation.locator('[data-assistant-selectable="true"]').first()).toContainText("CV_A7");
+  await expect(conversation.locator('[data-assistant-selectable="true"]').first()).toContainText("JOB_B4");
+  await conversation.getByRole("textbox", { name: "向求职助手提问" }).fill("岗位要求用户访谈，但简历没有写。请先问我一个访谈澄清问题，不要把缺失信息当成没有经验。控制在 80 字内。");
+  await conversation.getByRole("button", { name: "发送", exact: true }).click();
+  await expect(conversation.getByTestId("career-turn-source")).toHaveCount(2, { timeout: 90_000 });
+  await expect(conversation.getByRole("button", { name: "发送", exact: true })).toBeVisible({ timeout: 90_000 });
+  await expect(conversation.getByTestId("career-turn-source").last()).toHaveAttribute("data-analysis-status", "succeeded");
+  await expect(conversation.locator('[data-assistant-selectable="true"]').last()).toContainText("访谈");
+  await page.screenshot({ path: info.outputPath("career-conversation.png"), fullPage: true });
+  await page.reload();
+  await expect(conversation.getByRole("textbox", { name: "向求职助手提问" })).toBeEnabled();
+  // Real reasoning streams can span more than the first 40 history events.
+  for (let older = 0; older < 20 && await conversation.getByTestId("career-turn-source").count() < 2; older++) {
+    const load = conversation.getByRole("button", { name: "加载更早的消息" });
+    if (!await load.isVisible()) break;
+    await load.click();
+    await expect(load.and(page.locator(":disabled"))).toHaveCount(0);
+  }
+  await expect(conversation.getByTestId("career-turn-source")).toHaveCount(2);
+  await expect(conversation).toContainText("CV_A7");
+  // Opening the same career session in ordinary chat must not leave two owners.
+  await page.getByRole("button", { name: /@.*工程对话简历 → JOB_B4/ }).click();
+  await expect(page).toHaveURL(/#\/chat\//);
+  await page.getByRole("button", { name: "求职工作台", exact: true }).click();
+  await expect(conversation.getByRole("textbox", { name: "向求职助手提问" })).toBeEnabled();
+  expect(errors).toEqual([]);
+});
+
+test("cancelling a career reply preserves its materials and permits another question", async ({ page }) => {
+  test.skip(process.env.NANOBOT_CAREER_LIVE_MODEL === "1", "Latency and cancellation use the engineering provider only.");
+  await prepareConversation(page);
+  const conversation = page.getByRole("region", { name: "求职对话" });
+  await conversation.getByRole("textbox", { name: "向求职助手提问" }).fill("WAIT_FOR_CANCEL");
+  await conversation.getByRole("button", { name: "发送", exact: true }).click();
+  await conversation.getByRole("button", { name: "停止回复" }).click();
+  await expect(conversation.getByRole("button", { name: "发送", exact: true })).toBeVisible();
+  await conversation.getByRole("button", { name: "刷新", exact: true }).click();
+  await expect(conversation.getByTestId("career-turn-source").first()).toHaveAttribute("data-analysis-status", "cancelled");
+  await conversation.getByRole("textbox", { name: "向求职助手提问" }).fill("请告诉我项目代号。");
+  await conversation.getByRole("button", { name: "发送", exact: true }).click();
+  await expect(conversation).toContainText("工程测试回复：项目代号 CV_A7", { timeout: 15_000 });
+  await expect(page.getByRole("region", { name: "当前准备" })).toContainText("工程对话简历 · v1 → JOB_B4 · v1");
+});
+
+test("deleting the selected career chat removes its preparation but retains shared materials", async ({ page }, info) => {
+  test.skip(process.env.NANOBOT_CAREER_LIVE_MODEL === "1", "Deletion uses disposable engineering data only.");
+  await prepareConversation(page);
+  const previous = new URLSearchParams(new URL(page.url()).hash.split("?")[1]);
+  const oldPreparation = previous.get("preparation");
+  const conversation = page.getByRole("region", { name: "求职对话" });
+  await conversation.getByRole("textbox", { name: "向求职助手提问" }).fill("请告诉我项目代号。");
+  await conversation.getByRole("button", { name: "发送", exact: true }).click();
+  await expect(conversation.getByTestId("career-turn-source")).toHaveAttribute("data-analysis-status", "succeeded");
+  // Make this the active ordinary topic too, then return to the workbench.
+  await page.getByRole("button", { name: /@.*工程对话简历 → JOB_B4/ }).click();
+  await page.getByRole("button", { name: "求职工作台", exact: true }).click();
+  const actions = page.getByRole("button", { name: /工程对话简历 → JOB_B4.*话题操作/ });
+  await actions.click();
+  await page.getByRole("menuitem", { name: /删除/ }).click();
+  const dialog = page.getByRole("alertdialog");
+  await expect(dialog).toContainText("对应准备记录和关联清单将一并从工作台移除，简历及岗位库中的资料保留。");
+  await dialog.getByRole("button", { name: "取消", exact: true }).click();
+  await expect(page.getByRole("region", { name: "当前准备" })).toContainText("工程对话简历 · v1 → JOB_B4 · v1");
+  await actions.click();
+  await page.getByRole("menuitem", { name: /删除/ }).click();
+  await dialog.getByRole("button", { name: "删除", exact: true }).click();
+  await expect(page).toHaveURL(`${base}/#/career?workspace=${previous.get("workspace")}`);
+  await expect(page.getByRole("region", { name: "准备记录" })).toContainText("还没有准备记录。");
+  await expect(page.getByRole("region", { name: "当前准备" })).toContainText("尚未选择准备记录。");
+  await page.screenshot({ path: info.outputPath("career-deleted-preparation.png"), fullPage: true });
+  await stop(); await start(); await page.reload();
+  await expect(page.getByRole("region", { name: "准备记录" })).toContainText("还没有准备记录。");
+  await nav(page, "我的简历").click();
+  const retainedResume = page.getByRole("list", { name: "简历版本" }).getByRole("button", { name: /工程对话简历/ });
+  await expect(retainedResume).toHaveCount(1);
+  await expect(retainedResume).toContainText("v1");
+  await retainedResume.click();
+  await expect(page.getByRole("form", { name: "简历编辑" }).getByLabel("简历正文")).toHaveValue(/CV_A7/);
+  await nav(page, "岗位库").click();
+  const retainedJob = page.getByRole("list", { name: "岗位版本" }).getByRole("button", { name: /JOB_B4/ });
+  await expect(retainedJob).toHaveCount(1);
+  await expect(retainedJob).toContainText("v1");
+  await nav(page, "工作台").click();
+  const choose = page.getByRole("form", { name: "选择准备资料" });
+  await choose.getByLabel("简历版本").selectOption({ label: "工程对话简历 · v1" });
+  await choose.getByLabel("岗位版本").selectOption({ label: "JOB_B4 · v1" });
+  await choose.getByText("到岗条件（选填）", { exact: true }).click();
+  await choose.getByLabel("每周到岗天数（选填）").fill("3");
+  await choose.getByRole("button", { name: "进入准备记录" }).click();
+  await expect(conversation.getByRole("textbox", { name: "向求职助手提问" })).toBeEnabled();
+  expect(new URLSearchParams(new URL(page.url()).hash.split("?")[1]).get("preparation")).not.toBe(oldPreparation);
+  await expect(conversation).toContainText("资料已就绪。");
+});
+
+test("a reply finishing after a target switch stays in its original preparation", async ({ page }) => {
+  test.skip(process.env.NANOBOT_CAREER_LIVE_MODEL === "1", "Delayed routing uses engineering data only.");
+  await prepareConversation(page);
+  await nav(page, "我的简历").click();
+  await page.getByRole("button", { name: "新增简历", exact: true }).click();
+  const resume = page.getByRole("form", { name: "简历编辑" });
+  await resume.getByLabel("名称", { exact: true }).fill("工程切换简历");
+  await resume.getByLabel("简历正文").fill("工程虚构资料：唯一项目代号 CV_C9。");
+  await resume.getByRole("button", { name: "保存草稿", exact: true }).click();
+  await resume.getByRole("button", { name: "确认使用", exact: true }).click();
+  await expect(resume.getByLabel("简历正文")).toHaveAttribute("readonly");
+  await nav(page, "工作台").click();
+  await page.getByRole("button", { name: "更换资料", exact: true }).click();
+  const choose = page.getByRole("form", { name: "选择准备资料" });
+  await choose.getByLabel("简历版本").selectOption({ label: "工程切换简历 · v2" });
+  await choose.getByRole("button", { name: "进入准备记录" }).click();
+  const records = page.getByRole("region", { name: "准备记录" });
+  const conversation = page.getByRole("region", { name: "求职对话" });
+  await expect(conversation.getByRole("textbox", { name: "向求职助手提问" })).toBeEnabled();
+  await records.getByRole("button", { name: /工程对话简历/ }).click();
+  await expect(conversation.getByRole("textbox", { name: "向求职助手提问" })).toBeEnabled();
+  await conversation.getByRole("textbox", { name: "向求职助手提问" }).fill("DELAY_FOR_SWITCH");
+  await conversation.getByRole("button", { name: "发送", exact: true }).click();
+  await records.getByRole("button", { name: /工程切换简历/ }).click();
+  await expect(conversation.getByRole("textbox", { name: "向求职助手提问" })).toBeEnabled();
+  await conversation.getByRole("textbox", { name: "向求职助手提问" }).fill("请告诉我项目代号。");
+  await conversation.getByRole("button", { name: "发送", exact: true }).click();
+  await expect(conversation.locator('[data-assistant-selectable="true"]')).toContainText("CV_C9");
+  await records.getByRole("button", { name: /工程对话简历/ }).click();
+  await expect(conversation.locator('[data-assistant-selectable="true"]')).toContainText("CV_A7");
+  await records.getByRole("button", { name: /工程切换简历/ }).click();
+  await expect(conversation.locator('[data-assistant-selectable="true"]')).toContainText("CV_C9");
+  await expect(conversation.locator('[data-assistant-selectable="true"]')).not.toContainText("CV_A7");
+});
 
 test("real WebUI saves versions and preparation bindings across refresh, workspace changes and gateway restart", async ({ page }, info) => {
   const errors: string[] = [];

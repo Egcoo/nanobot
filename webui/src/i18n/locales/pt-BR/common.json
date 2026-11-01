@@ -487,72 +487,258 @@
         "rangeError": "Digite um número inteiro de segundos de 1 a {{max}}, ou escolha Sem limite de tempo."
       },
       "fields": {
-        "agents_defaults_timezone_mode": {"label": "Fuso do sistema", "help": "Desative para escolher um fuso horário.\n\nDesative para escolher o fuso horário manualmente."},
-        "agents_defaults_timezone": {"label": "Fuso horário", "help": "Os deslocamentos UTC usam a data atual.\n\nEscolha um fuso horário. A diferença em relação ao UTC considera a data atual."},
-        "agents_defaults_dream_enabled": {"label": "Consolidação de memória", "help": "Organize a memória automaticamente; desativar preserva as memórias existentes.\n\nOrganiza informações úteis das conversas. A memória existente continua disponível após desativar."},
-        "gateway_heartbeat_enabled": {"label": "Verificação periódica", "help": "Verifique as tarefas de HEARTBEAT.md periodicamente.\n\nVerifica periodicamente as tarefas em HEARTBEAT.md."},
-        "gateway_heartbeat_interval_s": {"label": "Intervalo de verificação", "help": "Segundos entre verificações do heartbeat.\n\nO gateway agenda as verificações ao iniciar."},
-        "agents_defaults_max_tool_iterations": {"label": "Rodadas de ferramentas", "help": "Máximo de rodadas de ferramentas por resposta.\n\nNúmero máximo de interações entre o modelo e as ferramentas em um turno."},
-        "agents_defaults_max_concurrent_subagents": {"label": "Subagentes simultâneos", "help": "Máximo de subagentes em execução ao mesmo tempo.\n\nNúmero máximo de subagentes executados ao mesmo tempo."},
-        "agents_defaults_max_tool_result_chars": {"label": "Tamanho do resultado", "help": "Limite de caracteres por resultado de ferramenta enviado ao modelo.\n\nLimita a saída das ferramentas incluída no contexto do modelo."},
-        "agents_defaults_provider_retry_mode": {"label": "Continuar tentando", "help": "Tente novamente após erros recuperáveis; desative para tentativas padrão.\n\nTenta novamente quando uma solicitação ao modelo falha por um erro temporário. Desative para limitar o número de tentativas."},
-        "agents_defaults_tool_hint_max_length": {"label": "Tamanho do resumo", "help": "Limite de caracteres dos resumos de atividade das ferramentas.\n\nTamanho máximo das indicações breves de atividade."},
-        "tools_max_session_messages_per_minute": {"label": "Frequência de mensagens", "help": "Máximo de mensagens de ferramentas para uma sessão por minuto.\n\nLimita a frequência das mensagens enviadas pelas ferramentas à conversa."},
-        "agents_defaults_unified_session": {"label": "Sessões compartilhadas", "help": "Compartilhe o histórico de um usuário entre plataformas.\n\nUsa a mesma conversa para um usuário em diferentes plataformas de chat."},
-        "tools_exec_enable": {"label": "Ferramenta de shell", "help": "Permita que o agente execute comandos Shell.\n\nPermite que o agente execute comandos de shell."},
-        "tools_file_enable": {"label": "Ferramentas de arquivos", "help": "Permita ferramentas integradas de leitura e edição de arquivos.\n\nPermite as ferramentas integradas de leitura e edição de arquivos."},
-        "tools_web_enable": {"label": "Acesso à web", "help": "Permita pesquisar e ler páginas web.\n\nPermite pesquisar na web e obter páginas."},
-        "tools_cli_apps_enable": {"label": "Apps CLI", "help": "Permita instalar, gerenciar e executar apps CLI.\n\nPermite que o agente gerencie e execute aplicativos de linha de comando."},
-        "tools_my_enable": {"label": "Ver configuração", "help": "Permita que o agente consulte sua configuração.\n\nPermite que o agente consulte sua própria configuração."},
-        "tools_my_allow_set": {"label": "Editar configuração", "help": "Permita que o agente altere sua configuração.\n\nPermite que a ferramenta de autogerenciamento atualize a configuração."},
-        "tools_exec_timeout": {"label": "Duração dos comandos", "help": "Limite padrão de duração dos comandos de shell.\n\nA saída e a espera não prolongam esse limite. Escolha Sem limite de tempo para remover o limite de duração."},
-        "tools_exec_path_prepend": {"label": "Prioridade no PATH", "help": "Pesquise primeiro nestas pastas.\n\nDiretórios adicionados ao início de PATH. Separe-os com ponto e vírgula no Windows ou com dois-pontos no macOS e no Linux."},
-        "tools_exec_path_append": {"label": "Adições ao PATH", "help": "Pesquise nestas pastas por último.\n\nDiretórios adicionados ao final de PATH. Separe-os com ponto e vírgula no Windows ou com dois-pontos no macOS e no Linux."},
-        "tools_exec_sandbox": {"label": "Sandbox de comandos", "help": "Isole os processos de comandos; requer suporte do sistema.\n\nUse bwrap no Linux ou Seatbelt no macOS. As verificações do espaço de trabalho, por si só, não isolam processos."},
-        "tools_exec_sandbox_ro_binds": {"label": "Caminhos de leitura", "help": "Caminhos extras de leitura, um por linha.\n\nMontagens adicionais de somente leitura, uma por linha."},
-        "tools_exec_sandbox_rw_binds": {"label": "Caminhos de escrita", "help": "Caminhos extras de escrita, um por linha.\n\nMontagens adicionais com permissão de escrita, uma por linha."},
-        "tools_exec_allowed_env_keys": {"label": "Variáveis de ambiente", "help": "Variáveis extras para os comandos, um nome por linha.\n\nVariáveis adicionais passadas aos comandos, uma por linha. As variáveis básicas necessárias continuam disponíveis."},
-        "tools_exec_allow_patterns": {"label": "Comandos permitidos", "help": "Execute apenas comandos que correspondam totalmente às regras de permissão.\n\nUma expressão regular por linha. Se houver regras, cada trecho do comando deve corresponder por completo a uma delas. Os comandos permitidos ignoram as regras de bloqueio integradas e personalizadas, mas continuam sujeitos às restrições de rede e do espaço de trabalho."},
-        "tools_exec_deny_patterns": {"label": "Comandos bloqueados", "help": "Bloqueie comandos que correspondam a estas regras.\n\nExpressões regulares de bloqueio adicionais, uma por linha. As regras de permissão explícitas têm prioridade sobre as regras de bloqueio integradas e personalizadas."},
-        "network_proxy": {"label": "Proxy compartilhado", "help": "Endereço usado pelos recursos com o proxy ativado. 127.0.0.1 é a máquina que executa nanobot."},
-        "tools_web_use_proxy": {"label": "Usar proxy", "help": "Usa o proxy compartilhado para pesquisar na web e ler páginas."},
-        "tools_web_user_agent": {"label": "Cabeçalho User-Agent", "help": "User-Agent das solicitações web; deixe vazio para usar o padrão.\n\nCabeçalho User-Agent personalizado. Deixe vazio para usar o valor padrão."},
-        "tools_restrict_to_workspace": {"label": "Restrição do espaço", "help": "Limites globais do espaço; permissões de conversas WebUI são separadas.\n\nPolítica global das ferramentas. As permissões de cada conversa WebUI são configuradas separadamente."},
-        "tools_ssrf_whitelist": {"label": "IPs permitidos", "help": "IPs ou faixas CIDR permitidos, um por linha.\n\nEndereços IP ou faixas CIDR isentos da proteção de solicitações de saída, um por linha."},
-        "tools_webui_allow_remote_package_install": {"label": "Instalações remotas", "help": "Permita instalar pacotes e habilidades remotamente; ajuste no host do gateway.\n\nPermite instalar pacotes e habilidades pela WebUI remota. Esta configuração precisa ser alterada no computador que executa o gateway."},
-        "tools_cli_apps_install_timeout": {"label": "Tempo limite de instalação", "help": "Máximo de segundos para instalar um app CLI.\n\nDuração máxima da instalação de aplicativos CLI."},
-        "tools_cli_apps_run_timeout": {"label": "Tempo limite de execução", "help": "Máximo de segundos para um comando CLI.\n\nDuração máxima dos comandos de aplicativos CLI."},
-        "tools_cli_apps_catalog_ttl_seconds": {"label": "Duração do cache", "help": "Segundos de cache da lista de apps CLI.\n\nTempo de armazenamento do catálogo de aplicativos CLI em cache."},
-        "gateway_host": {"label": "Endereço do gateway", "help": "Endereço do gateway; configure a escuta WebUI separadamente.\n\nEndereço em que o gateway recebe conexões. Os endereços de WebSocket e WebUI são configurados em Canais → WebSocket."},
-        "gateway_port": {"label": "Porta do gateway", "help": "Porta do gateway; os argumentos de inicialização têm prioridade.\n\nPorta salva. Os argumentos de linha de comando têm prioridade."},
-        "gateway_restart_mode": {"label": "Modo de reinicialização", "help": "Escolha como reiniciar; Automático segue o ambiente.\n\nMétodo de reinicialização do processo. O modo automático depende do ambiente do host."},
-        "api_host": {"label": "Endereço da API", "help": "Defina uma chave antes do acesso pela rede; reinicie a API após alterações.\n\nÉ necessária uma chave de API para receber conexões em um endereço diferente de localhost. Configure a chave em Sistema e reinicie o serviço de API para aplicar as alterações."},
-        "api_timeout": {"label": "Tempo limite da API", "help": "Máximo de segundos por solicitação API; reinicie para aplicar.\n\nDuração máxima das solicitações. Reinicie o serviço de API para aplicar as alterações."},
-        "tools_image_generation_save_dir": {"label": "Pasta de destino", "help": "Caminho relativo dentro da pasta de mídia; imagens existentes não são movidas.\n\nCaminho relativo dentro da pasta de mídia do nanobot. As imagens existentes não são movidas."}
+        "agents_defaults_timezone_mode": {
+          "label": "Fuso do sistema",
+          "help": "Desative para escolher um fuso horário.\n\nDesative para escolher o fuso horário manualmente."
+        },
+        "agents_defaults_timezone": {
+          "label": "Fuso horário",
+          "help": "Os deslocamentos UTC usam a data atual.\n\nEscolha um fuso horário. A diferença em relação ao UTC considera a data atual."
+        },
+        "agents_defaults_dream_enabled": {
+          "label": "Consolidação de memória",
+          "help": "Organize a memória automaticamente; desativar preserva as memórias existentes.\n\nOrganiza informações úteis das conversas. A memória existente continua disponível após desativar."
+        },
+        "gateway_heartbeat_enabled": {
+          "label": "Verificação periódica",
+          "help": "Verifique as tarefas de HEARTBEAT.md periodicamente.\n\nVerifica periodicamente as tarefas em HEARTBEAT.md."
+        },
+        "gateway_heartbeat_interval_s": {
+          "label": "Intervalo de verificação",
+          "help": "Segundos entre verificações do heartbeat.\n\nO gateway agenda as verificações ao iniciar."
+        },
+        "agents_defaults_max_tool_iterations": {
+          "label": "Rodadas de ferramentas",
+          "help": "Máximo de rodadas de ferramentas por resposta.\n\nNúmero máximo de interações entre o modelo e as ferramentas em um turno."
+        },
+        "agents_defaults_max_concurrent_subagents": {
+          "label": "Subagentes simultâneos",
+          "help": "Máximo de subagentes em execução ao mesmo tempo.\n\nNúmero máximo de subagentes executados ao mesmo tempo."
+        },
+        "agents_defaults_max_tool_result_chars": {
+          "label": "Tamanho do resultado",
+          "help": "Limite de caracteres por resultado de ferramenta enviado ao modelo.\n\nLimita a saída das ferramentas incluída no contexto do modelo."
+        },
+        "agents_defaults_provider_retry_mode": {
+          "label": "Continuar tentando",
+          "help": "Tente novamente após erros recuperáveis; desative para tentativas padrão.\n\nTenta novamente quando uma solicitação ao modelo falha por um erro temporário. Desative para limitar o número de tentativas."
+        },
+        "agents_defaults_tool_hint_max_length": {
+          "label": "Tamanho do resumo",
+          "help": "Limite de caracteres dos resumos de atividade das ferramentas.\n\nTamanho máximo das indicações breves de atividade."
+        },
+        "tools_max_session_messages_per_minute": {
+          "label": "Frequência de mensagens",
+          "help": "Máximo de mensagens de ferramentas para uma sessão por minuto.\n\nLimita a frequência das mensagens enviadas pelas ferramentas à conversa."
+        },
+        "agents_defaults_unified_session": {
+          "label": "Sessões compartilhadas",
+          "help": "Compartilhe o histórico de um usuário entre plataformas.\n\nUsa a mesma conversa para um usuário em diferentes plataformas de chat."
+        },
+        "tools_exec_enable": {
+          "label": "Ferramenta de shell",
+          "help": "Permita que o agente execute comandos Shell.\n\nPermite que o agente execute comandos de shell."
+        },
+        "tools_file_enable": {
+          "label": "Ferramentas de arquivos",
+          "help": "Permita ferramentas integradas de leitura e edição de arquivos.\n\nPermite as ferramentas integradas de leitura e edição de arquivos."
+        },
+        "tools_web_enable": {
+          "label": "Acesso à web",
+          "help": "Permita pesquisar e ler páginas web.\n\nPermite pesquisar na web e obter páginas."
+        },
+        "tools_cli_apps_enable": {
+          "label": "Apps CLI",
+          "help": "Permita instalar, gerenciar e executar apps CLI.\n\nPermite que o agente gerencie e execute aplicativos de linha de comando."
+        },
+        "tools_my_enable": {
+          "label": "Ver configuração",
+          "help": "Permita que o agente consulte sua configuração.\n\nPermite que o agente consulte sua própria configuração."
+        },
+        "tools_my_allow_set": {
+          "label": "Editar configuração",
+          "help": "Permita que o agente altere sua configuração.\n\nPermite que a ferramenta de autogerenciamento atualize a configuração."
+        },
+        "tools_exec_timeout": {
+          "label": "Duração dos comandos",
+          "help": "Limite padrão de duração dos comandos de shell.\n\nA saída e a espera não prolongam esse limite. Escolha Sem limite de tempo para remover o limite de duração."
+        },
+        "tools_exec_path_prepend": {
+          "label": "Prioridade no PATH",
+          "help": "Pesquise primeiro nestas pastas.\n\nDiretórios adicionados ao início de PATH. Separe-os com ponto e vírgula no Windows ou com dois-pontos no macOS e no Linux."
+        },
+        "tools_exec_path_append": {
+          "label": "Adições ao PATH",
+          "help": "Pesquise nestas pastas por último.\n\nDiretórios adicionados ao final de PATH. Separe-os com ponto e vírgula no Windows ou com dois-pontos no macOS e no Linux."
+        },
+        "tools_exec_sandbox": {
+          "label": "Sandbox de comandos",
+          "help": "Isole os processos de comandos; requer suporte do sistema.\n\nUse bwrap no Linux ou Seatbelt no macOS. As verificações do espaço de trabalho, por si só, não isolam processos."
+        },
+        "tools_exec_sandbox_ro_binds": {
+          "label": "Caminhos de leitura",
+          "help": "Caminhos extras de leitura, um por linha.\n\nMontagens adicionais de somente leitura, uma por linha."
+        },
+        "tools_exec_sandbox_rw_binds": {
+          "label": "Caminhos de escrita",
+          "help": "Caminhos extras de escrita, um por linha.\n\nMontagens adicionais com permissão de escrita, uma por linha."
+        },
+        "tools_exec_allowed_env_keys": {
+          "label": "Variáveis de ambiente",
+          "help": "Variáveis extras para os comandos, um nome por linha.\n\nVariáveis adicionais passadas aos comandos, uma por linha. As variáveis básicas necessárias continuam disponíveis."
+        },
+        "tools_exec_allow_patterns": {
+          "label": "Comandos permitidos",
+          "help": "Execute apenas comandos que correspondam totalmente às regras de permissão.\n\nUma expressão regular por linha. Se houver regras, cada trecho do comando deve corresponder por completo a uma delas. Os comandos permitidos ignoram as regras de bloqueio integradas e personalizadas, mas continuam sujeitos às restrições de rede e do espaço de trabalho."
+        },
+        "tools_exec_deny_patterns": {
+          "label": "Comandos bloqueados",
+          "help": "Bloqueie comandos que correspondam a estas regras.\n\nExpressões regulares de bloqueio adicionais, uma por linha. As regras de permissão explícitas têm prioridade sobre as regras de bloqueio integradas e personalizadas."
+        },
+        "network_proxy": {
+          "label": "Proxy compartilhado",
+          "help": "Endereço usado pelos recursos com o proxy ativado. 127.0.0.1 é a máquina que executa nanobot."
+        },
+        "tools_web_use_proxy": {
+          "label": "Usar proxy",
+          "help": "Usa o proxy compartilhado para pesquisar na web e ler páginas."
+        },
+        "tools_web_user_agent": {
+          "label": "Cabeçalho User-Agent",
+          "help": "User-Agent das solicitações web; deixe vazio para usar o padrão.\n\nCabeçalho User-Agent personalizado. Deixe vazio para usar o valor padrão."
+        },
+        "tools_restrict_to_workspace": {
+          "label": "Restrição do espaço",
+          "help": "Limites globais do espaço; permissões de conversas WebUI são separadas.\n\nPolítica global das ferramentas. As permissões de cada conversa WebUI são configuradas separadamente."
+        },
+        "tools_ssrf_whitelist": {
+          "label": "IPs permitidos",
+          "help": "IPs ou faixas CIDR permitidos, um por linha.\n\nEndereços IP ou faixas CIDR isentos da proteção de solicitações de saída, um por linha."
+        },
+        "tools_webui_allow_remote_package_install": {
+          "label": "Instalações remotas",
+          "help": "Permita instalar pacotes e habilidades remotamente; ajuste no host do gateway.\n\nPermite instalar pacotes e habilidades pela WebUI remota. Esta configuração precisa ser alterada no computador que executa o gateway."
+        },
+        "tools_cli_apps_install_timeout": {
+          "label": "Tempo limite de instalação",
+          "help": "Máximo de segundos para instalar um app CLI.\n\nDuração máxima da instalação de aplicativos CLI."
+        },
+        "tools_cli_apps_run_timeout": {
+          "label": "Tempo limite de execução",
+          "help": "Máximo de segundos para um comando CLI.\n\nDuração máxima dos comandos de aplicativos CLI."
+        },
+        "tools_cli_apps_catalog_ttl_seconds": {
+          "label": "Duração do cache",
+          "help": "Segundos de cache da lista de apps CLI.\n\nTempo de armazenamento do catálogo de aplicativos CLI em cache."
+        },
+        "gateway_host": {
+          "label": "Endereço do gateway",
+          "help": "Endereço do gateway; configure a escuta WebUI separadamente.\n\nEndereço em que o gateway recebe conexões. Os endereços de WebSocket e WebUI são configurados em Canais → WebSocket."
+        },
+        "gateway_port": {
+          "label": "Porta do gateway",
+          "help": "Porta do gateway; os argumentos de inicialização têm prioridade.\n\nPorta salva. Os argumentos de linha de comando têm prioridade."
+        },
+        "gateway_restart_mode": {
+          "label": "Modo de reinicialização",
+          "help": "Escolha como reiniciar; Automático segue o ambiente.\n\nMétodo de reinicialização do processo. O modo automático depende do ambiente do host."
+        },
+        "api_host": {
+          "label": "Endereço da API",
+          "help": "Defina uma chave antes do acesso pela rede; reinicie a API após alterações.\n\nÉ necessária uma chave de API para receber conexões em um endereço diferente de localhost. Configure a chave em Sistema e reinicie o serviço de API para aplicar as alterações."
+        },
+        "api_timeout": {
+          "label": "Tempo limite da API",
+          "help": "Máximo de segundos por solicitação API; reinicie para aplicar.\n\nDuração máxima das solicitações. Reinicie o serviço de API para aplicar as alterações."
+        },
+        "tools_image_generation_save_dir": {
+          "label": "Pasta de destino",
+          "help": "Caminho relativo dentro da pasta de mídia; imagens existentes não são movidas.\n\nCaminho relativo dentro da pasta de mídia do nanobot. As imagens existentes não são movidas."
+        }
       },
       "groups": {
-        "chat": {"title": "Permissões WebUI", "help": "Configure acesso a serviços locais e permissões padrão das conversas.\n\nAcesso a serviços locais e permissões padrão das conversas."},
-        "identity": {"title": "Fuso horário", "help": "Escolha o fuso horário das tarefas agendadas."},
-        "memory": {"title": "Memória", "help": "Ative ou desative a organização automática de memória."},
-        "heartbeat": {"title": "Verificações periódicas", "help": "Configure verificações periódicas de tarefas."},
-        "execution": {"title": "Limites de execução", "help": "Configure limites de ferramentas e novas tentativas."},
-        "sessions": {"title": "Conversas", "help": "Configure conversas compartilhadas entre plataformas."},
-        "tools": {"title": "Ferramentas integradas", "help": "Escolha as ferramentas que o agente pode usar."},
-        "shell": {"title": "Shell e sandbox", "help": "Configure tempos limite, ambiente e regras de acesso dos comandos."},
-        "proxy": {"title": "Proxy compartilhado", "help": "Defina um endereço para os recursos que usam proxy."},
-        "network": {"title": "Conexões web", "help": "Configure o uso de proxy e o User-Agent das solicitações web."},
-        "safety": {"title": "Permissões globais", "help": "Configure limites do espaço, exceções de rede e instalações remotas.\n\nRestrições do espaço de trabalho, redes privadas e instalações remotas."},
-        "cli": {"title": "Limites CLI", "help": "Configure tempos limite de instalação e execução e duração do cache.\n\nTempos de instalação, execução e cache do catálogo."},
-        "gateway": {"title": "Gateway", "help": "Configure implantação e reinício."},
-        "api": {"title": "Ajustes da API", "help": "Configure o endereço de escuta e o tempo limite das solicitações."},
-        "storage": {"title": "Armazenamento de imagens", "help": "Escolha onde salvar as imagens geradas."},
-        "maintenance": {"title": "Organização de memória", "help": ""},
-        "web": {"title": "Acesso web", "help": ""},
-        "applications": {"title": "Apps CLI", "help": ""}
+        "chat": {
+          "title": "Permissões WebUI",
+          "help": "Configure acesso a serviços locais e permissões padrão das conversas.\n\nAcesso a serviços locais e permissões padrão das conversas."
+        },
+        "identity": {
+          "title": "Fuso horário",
+          "help": "Escolha o fuso horário das tarefas agendadas."
+        },
+        "memory": {
+          "title": "Memória",
+          "help": "Ative ou desative a organização automática de memória."
+        },
+        "heartbeat": {
+          "title": "Verificações periódicas",
+          "help": "Configure verificações periódicas de tarefas."
+        },
+        "execution": {
+          "title": "Limites de execução",
+          "help": "Configure limites de ferramentas e novas tentativas."
+        },
+        "sessions": {
+          "title": "Conversas",
+          "help": "Configure conversas compartilhadas entre plataformas."
+        },
+        "tools": {
+          "title": "Ferramentas integradas",
+          "help": "Escolha as ferramentas que o agente pode usar."
+        },
+        "shell": {
+          "title": "Shell e sandbox",
+          "help": "Configure tempos limite, ambiente e regras de acesso dos comandos."
+        },
+        "proxy": {
+          "title": "Proxy compartilhado",
+          "help": "Defina um endereço para os recursos que usam proxy."
+        },
+        "network": {
+          "title": "Conexões web",
+          "help": "Configure o uso de proxy e o User-Agent das solicitações web."
+        },
+        "safety": {
+          "title": "Permissões globais",
+          "help": "Configure limites do espaço, exceções de rede e instalações remotas.\n\nRestrições do espaço de trabalho, redes privadas e instalações remotas."
+        },
+        "cli": {
+          "title": "Limites CLI",
+          "help": "Configure tempos limite de instalação e execução e duração do cache.\n\nTempos de instalação, execução e cache do catálogo."
+        },
+        "gateway": {
+          "title": "Gateway",
+          "help": "Configure implantação e reinício."
+        },
+        "api": {
+          "title": "Ajustes da API",
+          "help": "Configure o endereço de escuta e o tempo limite das solicitações."
+        },
+        "storage": {
+          "title": "Armazenamento de imagens",
+          "help": "Escolha onde salvar as imagens geradas."
+        },
+        "maintenance": {
+          "title": "Organização de memória",
+          "help": ""
+        },
+        "web": {
+          "title": "Acesso web",
+          "help": ""
+        },
+        "applications": {
+          "title": "Apps CLI",
+          "help": ""
+        }
       },
-      "save": "Salvar alterações", "saving": "Salvando…", "discard": "Descartar alterações", "saved": "Salvo.",
-      "restart": "Reiniciar nanobot", "restartHelp": "Reinicie para aplicar as alterações. Os argumentos de linha de comando e as variáveis de ambiente podem ter prioridade.",
-      "search": "Buscar uma configuração avançada", "noResults": "Nenhuma configuração correspondente.", "pending": "Alterações não salvas",
+      "save": "Salvar alterações",
+      "saving": "Salvando…",
+      "discard": "Descartar alterações",
+      "saved": "Salvo.",
+      "restart": "Reiniciar nanobot",
+      "restartHelp": "Reinicie para aplicar as alterações. Os argumentos de linha de comando e as variáveis de ambiente podem ter prioridade.",
+      "search": "Buscar uma configuração avançada",
+      "noResults": "Nenhuma configuração correspondente.",
+      "pending": "Alterações não salvas",
       "idleCompaction": {
         "label": "Compactação automática por inatividade",
         "help": "Compacta o contexto automaticamente ao atingir o limite de inatividade para reduzir o uso de tokens nas próximas solicitações.",
@@ -560,9 +746,15 @@
         "minutes": "minutos",
         "numberError": "Digite um número inteiro de minutos maior ou igual a zero."
       },
-      "numberError": "Digite um número válido dentro do intervalo permitido.", "activeModel": "Usar o modelo ativo", "none": "Nenhum",
-      "auto": "Automático", "manual": "Manual", "standard": "Padrão", "persistent": "Contínuo",
-      "unavailable": "Atualize o gateway para editar estas configurações.", "advancedOptions": "Opções avançadas"
+      "numberError": "Digite um número válido dentro do intervalo permitido.",
+      "activeModel": "Usar o modelo ativo",
+      "none": "Nenhum",
+      "auto": "Automático",
+      "manual": "Manual",
+      "standard": "Padrão",
+      "persistent": "Contínuo",
+      "unavailable": "Atualize o gateway para editar estas configurações.",
+      "advancedOptions": "Opções avançadas"
     },
     "backToChat": "Voltar para a conversa",
     "sidebar": {
@@ -1764,7 +1956,8 @@
       "disabled": "Pausada",
       "local": "Aguardando gatilho",
       "none": "Sem próxima execução"
-    }
+    },
+    "careerDescription": "A preparação vinculada e suas tarefas também serão removidas do espaço de trabalho. Os currículos e as vagas das suas bibliotecas serão mantidos."
   },
   "connection": {
     "idle": "Ocioso",
@@ -2651,6 +2844,43 @@
     "currentUse": "Em uso",
     "viewOnlyHint": "Visualizar uma versão não altera os materiais desta preparação.",
     "textSource": "Texto colado",
-    "addedAt": "Adicionado"
+    "addedAt": "Adicionado",
+    "modelMaterials": "Ver materiais de referência",
+    "privacyHint": "Dados de contato comuns e caminhos locais são ocultados. Apenas os materiais desta preparação são incluídos; confira o conteúdo abaixo.",
+    "contextTruncated": "Parte do material foi encurtada. Você pode complementar os detalhes na conversa.",
+    "chatLoadError": "Não foi possível carregar os materiais ou a conversa. Atualize para tentar novamente.",
+    "chatFailure": "Esta interação não foi concluída. Verifique a conexão ou o modelo e pergunte novamente.",
+    "olderMessages": "Carregar mensagens anteriores",
+    "replyMaterials": "Materiais: {{resume}} · v{{resumeVersion}} / {{job}} · v{{jobVersion}}",
+    "chatWelcome": "Os materiais estão prontos. Pergunte o que preparar primeiro para esta vaga com base na sua experiência.",
+    "chatInput": "Perguntar ao assistente de carreira",
+    "stop": "Parar resposta",
+    "availabilityTitle": "Disponibilidade desta preparação",
+    "availabilitySource": "Condições informadas ao criar esta preparação.",
+    "availabilityDays": "Dias disponíveis por semana",
+    "availabilityMonths": "Duração do estágio",
+    "availabilityDate": "Primeira data disponível",
+    "availabilityLocations": "Locais de preferência",
+    "daysValue": "{{count}} dias por semana",
+    "monthsValue": "{{count}} meses",
+    "openResumeLibrary": "Abrir biblioteca de currículos",
+    "openJobLibrary": "Abrir biblioteca de vagas",
+    "resumeFacts": "Detalhes adicionais do currículo",
+    "jobFacts": "Detalhes adicionais da vaga",
+    "conditionMismatch": "A disponibilidade difere do currículo",
+    "conditionMismatchHint": "Esta preparação usa as condições informadas aqui. Confira o currículo; o conteúdo confirmado não muda.",
+    "conditionComparison": "Informado aqui: {{selected}}; currículo: {{resume}}.",
+    "conditionEvidence": "Trecho do currículo: “{{text}}”",
+    "education": "Formação",
+    "skills": "Habilidades",
+    "projects": "Projetos",
+    "interviewExperience": "Experiência em entrevistas com usuários",
+    "valueYes": "Sim",
+    "valueNo": "Não",
+    "daysValue_one": "{{count}} dia por semana",
+    "daysValue_other": "{{count}} dias por semana",
+    "monthsValue_one": "{{count}} mês",
+    "monthsValue_other": "{{count}} meses",
+    "plansUnsupported": "Este host não permite salvar planos. Você pode continuar a conversa."
   }
 }

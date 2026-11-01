@@ -3,6 +3,7 @@ import { ArrowLeft, BriefcaseBusiness, RefreshCw } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { useClient } from "@/providers/ClientProvider";
+import { ThreadVisibilityContext } from "@/hooks/useThreadVisibility";
 import { ApiError } from "@/lib/api";
 import {
   confirmCareerJob, confirmCareerResume, createCareerThread, fetchCareerState,
@@ -140,8 +141,14 @@ function CareerScope({ reference, threadId, page, setPage, onSelect, epoch, onBa
     void load(controller.signal);
     return () => controller.abort();
   }, [load, epoch]);
+  useEffect(() => client.onSessionUpdate((chatId, scope) => {
+    if (chatId.startsWith("career-") && scope === "metadata") void load();
+  }), [client, load]);
   const data = resource?.owner === client ? resource.value : null;
   const current = data?.threads.find((thread) => thread.id === threadId);
+  useEffect(() => {
+    if (threadId && data?.deleted_thread_ids?.includes(threadId)) onSelect("");
+  }, [data, onSelect, threadId]);
 
   async function perform<T,>(operation: () => Promise<T>): Promise<T | undefined> {
     const owner = ownerRef.current;
@@ -172,12 +179,12 @@ function CareerScope({ reference, threadId, page, setPage, onSelect, epoch, onBa
         <h2 className="text-2xl font-semibold tracking-tight">{t(`career.${page}`)}</h2>
         <p className="text-sm leading-relaxed text-muted-foreground">{t(page === "resumes" ? "career.fileImportLater" : page === "jobs" ? "career.imageImportLater" : "career.tasksHint")}</p>
       </div> : null}
-      <div hidden={page !== "workbench"}><CareerHome key={`${threadId}:${preparationDraft}`} data={data} thread={current} busy={busy}
+      <ThreadVisibilityContext.Provider value={page === "workbench"}><div hidden={page !== "workbench"}><CareerHome key={`${threadId}:${preparationDraft}`} data={data} thread={current} busy={busy}
         onNavigate={setPage} onBackToChat={onBackToChat}
         onCreate={async (resumeId, jobId, conditions) => {
           const thread = await perform(() => createCareerThread(client, reference, resumeId, jobId, conditions));
           if (thread) onSelect(thread.id);
-        }} /></div>
+        }} /></div></ThreadVisibilityContext.Provider>
       <div hidden={page !== "resumes"}><ResumeLibrary records={data.resumes} busy={busy}
         activeVersionId={current?.resume_version_id}
         onSave={(action, input) => perform(() => saveCareerResume(client, reference, action, input))}

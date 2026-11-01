@@ -20,6 +20,7 @@ interface DeleteConfirmProps {
   title: string;
   count?: number;
   automations?: SessionAutomationJob[];
+  careerPreparation?: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }
@@ -29,6 +30,7 @@ export function DeleteConfirm({
   title,
   count = 1,
   automations = [],
+  careerPreparation = false,
   onCancel,
   onConfirm,
 }: DeleteConfirmProps) {
@@ -70,6 +72,7 @@ export function DeleteConfirm({
                   })
                 : t("deleteConfirm.description")}
           </AlertDialogDescription>
+          {careerPreparation ? <p className="mt-3 max-w-[17rem] text-sm leading-6 text-muted-foreground">{t("deleteConfirm.careerDescription")}</p> : null}
           {hasAutomations ? (
             <div className="mt-4 max-h-40 w-full overflow-y-auto rounded-2xl bg-muted/55 px-3 py-2 text-left">
               {visibleAutomations.map((job) => (

@@ -487,72 +487,258 @@
         "rangeError": "Masukkan jumlah detik berupa bilangan bulat dari 1 hingga {{max}}, atau pilih Tanpa batas waktu."
       },
       "fields": {
-        "agents_defaults_timezone_mode": {"label": "Zona waktu sistem", "help": "Nonaktifkan untuk memilih zona waktu.\n\nNonaktifkan untuk memilih zona waktu secara manual."},
-        "agents_defaults_timezone": {"label": "Zona waktu", "help": "Selisih UTC mengikuti tanggal saat ini.\n\nPilih zona waktu. Selisih waktu dari UTC mengikuti tanggal saat ini."},
-        "agents_defaults_dream_enabled": {"label": "Penataan memori", "help": "Atur memori otomatis; menonaktifkan tetap menyimpan memori yang ada.\n\nMenata informasi berguna dari percakapan secara otomatis. Memori yang ada tetap digunakan saat dinonaktifkan."},
-        "gateway_heartbeat_enabled": {"label": "Pemeriksaan berkala", "help": "Periksa tugas di HEARTBEAT.md secara berkala.\n\nMemeriksa tugas di HEARTBEAT.md secara berkala."},
-        "gateway_heartbeat_interval_s": {"label": "Interval pemeriksaan", "help": "Jeda pemeriksaan heartbeat dalam detik.\n\nGateway menjadwalkan pemeriksaan berkala saat dimulai."},
-        "agents_defaults_max_tool_iterations": {"label": "Putaran alat", "help": "Batas putaran alat untuk tiap balasan.\n\nJumlah maksimum interaksi model dan alat dalam satu giliran."},
-        "agents_defaults_max_concurrent_subagents": {"label": "Subagen bersamaan", "help": "Batas subagen yang berjalan bersamaan.\n\nJumlah maksimum subagen yang berjalan bersamaan."},
-        "agents_defaults_max_tool_result_chars": {"label": "Panjang hasil", "help": "Batas karakter tiap hasil alat yang dikirim ke model.\n\nMembatasi keluaran alat yang disertakan dalam konteks model."},
-        "agents_defaults_provider_retry_mode": {"label": "Terus mencoba", "help": "Ulangi setelah kesalahan yang dapat dipulihkan; nonaktifkan untuk percobaan standar.\n\nMencoba kembali permintaan ke model saat terjadi kesalahan sementara. Nonaktifkan untuk membatasi jumlah percobaan ulang."},
-        "agents_defaults_tool_hint_max_length": {"label": "Panjang ringkasan", "help": "Batas karakter ringkasan aktivitas alat.\n\nPanjang maksimum petunjuk singkat aktivitas alat."},
-        "tools_max_session_messages_per_minute": {"label": "Frekuensi pesan", "help": "Batas pesan alat ke satu sesi per menit.\n\nMembatasi frekuensi alat mengirim pesan ke percakapan."},
-        "agents_defaults_unified_session": {"label": "Sesi bersama", "help": "Bagikan riwayat chat satu pengguna di berbagai platform.\n\nMenggunakan satu percakapan untuk satu pengguna di beberapa platform chat."},
-        "tools_exec_enable": {"label": "Alat shell", "help": "Izinkan agen menjalankan perintah Shell.\n\nMengizinkan agen menjalankan perintah shell."},
-        "tools_file_enable": {"label": "Alat file", "help": "Izinkan alat bawaan untuk membaca dan mengedit berkas.\n\nMengizinkan alat bawaan untuk membaca dan mengedit file."},
-        "tools_web_enable": {"label": "Akses web", "help": "Izinkan pencarian dan pembacaan halaman web.\n\nMengizinkan pencarian web dan pengambilan halaman."},
-        "tools_cli_apps_enable": {"label": "Aplikasi CLI", "help": "Izinkan pemasangan, pengelolaan, dan menjalankan aplikasi CLI.\n\nMengizinkan agen mengelola dan menjalankan aplikasi baris perintah."},
-        "tools_my_enable": {"label": "Lihat konfigurasi", "help": "Izinkan agen melihat konfigurasinya.\n\nMengizinkan agen memeriksa konfigurasinya sendiri."},
-        "tools_my_allow_set": {"label": "Ubah konfigurasi", "help": "Izinkan agen mengubah konfigurasinya.\n\nMengizinkan alat pengelolaan diri memperbarui konfigurasi."},
-        "tools_exec_timeout": {"label": "Durasi perintah", "help": "Batas durasi bawaan untuk perintah shell.\n\nKeluaran dan waktu tunggu tidak memperpanjang batas ini. Pilih Tanpa batas waktu untuk menghapus batas durasi."},
-        "tools_exec_path_prepend": {"label": "Prioritas PATH", "help": "Cari di direktori ini terlebih dahulu.\n\nDirektori yang ditambahkan di awal PATH. Pisahkan dengan titik koma di Windows atau titik dua di macOS dan Linux."},
-        "tools_exec_path_append": {"label": "Tambahan PATH", "help": "Cari di direktori ini terakhir.\n\nDirektori yang ditambahkan di akhir PATH. Pisahkan dengan titik koma di Windows atau titik dua di macOS dan Linux."},
-        "tools_exec_sandbox": {"label": "Sandbox perintah", "help": "Isolasi proses perintah; memerlukan dukungan sistem.\n\nGunakan bwrap di Linux atau Seatbelt di macOS. Pemeriksaan ruang kerja saja tidak mengisolasi proses."},
-        "tools_exec_sandbox_ro_binds": {"label": "Lokasi hanya-baca", "help": "Lokasi tambahan hanya-baca, satu per baris.\n\nJalur tambahan yang dipasang hanya baca, satu per baris."},
-        "tools_exec_sandbox_rw_binds": {"label": "Lokasi dapat ditulis", "help": "Lokasi tambahan yang dapat ditulis, satu per baris.\n\nJalur tambahan yang dipasang dengan izin tulis, satu per baris."},
-        "tools_exec_allowed_env_keys": {"label": "Variabel lingkungan", "help": "Variabel tambahan untuk perintah, satu nama per baris.\n\nVariabel tambahan yang diteruskan ke perintah, satu per baris. Variabel dasar yang diperlukan tetap tersedia."},
-        "tools_exec_allow_patterns": {"label": "Perintah diizinkan", "help": "Hanya jalankan perintah yang cocok sepenuhnya dengan aturan izin.\n\nSatu ekspresi reguler per baris. Jika diisi, setiap bagian perintah harus cocok sepenuhnya dengan salah satu aturan. Perintah yang diizinkan melewati aturan pemblokiran bawaan dan tambahan, tetapi tetap mengikuti batasan jaringan dan ruang kerja."},
-        "tools_exec_deny_patterns": {"label": "Perintah diblokir", "help": "Blokir perintah yang cocok dengan aturan ini.\n\nAturan pemblokiran tambahan berupa ekspresi reguler, satu per baris. Aturan izin eksplisit mengesampingkan aturan pemblokiran bawaan dan tambahan."},
-        "network_proxy": {"label": "Proxy bersama", "help": "Alamat untuk fitur yang mengaktifkan proxy. 127.0.0.1 adalah perangkat yang menjalankan nanobot."},
-        "tools_web_use_proxy": {"label": "Gunakan proxy", "help": "Gunakan proxy bersama untuk pencarian web dan pembacaan halaman."},
-        "tools_web_user_agent": {"label": "Header User-Agent", "help": "User-Agent untuk permintaan web; kosongkan untuk nilai default.\n\nHeader User-Agent kustom. Kosongkan untuk memakai nilai default."},
-        "tools_restrict_to_workspace": {"label": "Batas ruang kerja", "help": "Batas ruang kerja global; izin chat WebUI diatur terpisah.\n\nKebijakan alat global. Izin setiap percakapan WebUI diatur secara terpisah."},
-        "tools_ssrf_whitelist": {"label": "IP diizinkan", "help": "IP atau rentang CIDR diizinkan, satu per baris.\n\nIP atau rentang CIDR yang dikecualikan dari perlindungan permintaan keluar, satu per baris."},
-        "tools_webui_allow_remote_package_install": {"label": "Pemasangan jarak jauh", "help": "Izinkan pemasangan paket dan skill jarak jauh; atur di host gateway.\n\nMengizinkan pemasangan paket dan keterampilan melalui WebUI jarak jauh. Pengaturan ini harus diubah di komputer yang menjalankan gateway."},
-        "tools_cli_apps_install_timeout": {"label": "Batas waktu pemasangan", "help": "Batas detik untuk memasang aplikasi CLI.\n\nDurasi maksimum instalasi aplikasi CLI."},
-        "tools_cli_apps_run_timeout": {"label": "Batas waktu eksekusi", "help": "Batas detik untuk perintah CLI.\n\nDurasi maksimum perintah aplikasi CLI."},
-        "tools_cli_apps_catalog_ttl_seconds": {"label": "Durasi cache", "help": "Durasi cache daftar aplikasi CLI dalam detik.\n\nLama katalog aplikasi CLI disimpan dalam cache."},
-        "gateway_host": {"label": "Alamat gateway", "help": "Alamat gateway; atur listener WebUI secara terpisah.\n\nAlamat tempat gateway menerima koneksi. Alamat WebSocket dan WebUI diatur di Kanal → WebSocket."},
-        "gateway_port": {"label": "Port gateway", "help": "Port gateway; argumen peluncuran diutamakan.\n\nPort yang disimpan. Argumen baris perintah lebih diutamakan."},
-        "gateway_restart_mode": {"label": "Mode mulai ulang", "help": "Pilih cara mulai ulang; Otomatis mengikuti lingkungan.\n\nCara memulai ulang proses. Mode otomatis memilih berdasarkan lingkungan host."},
-        "api_host": {"label": "Alamat API", "help": "Tetapkan kunci sebelum akses jaringan; mulai ulang API setelah perubahan.\n\nKunci API diperlukan untuk menerima koneksi pada alamat selain localhost. Atur kunci di Sistem, lalu mulai ulang layanan API untuk menerapkan perubahan."},
-        "api_timeout": {"label": "Batas waktu API", "help": "Batas detik tiap permintaan API; mulai ulang untuk menerapkan.\n\nDurasi maksimum permintaan. Mulai ulang layanan API untuk menerapkan perubahan."},
-        "tools_image_generation_save_dir": {"label": "Direktori penyimpanan", "help": "Lokasi relatif dalam direktori media; gambar yang ada tidak dipindahkan.\n\nJalur relatif di dalam folder media nanobot. Gambar yang ada tidak dipindahkan."}
+        "agents_defaults_timezone_mode": {
+          "label": "Zona waktu sistem",
+          "help": "Nonaktifkan untuk memilih zona waktu.\n\nNonaktifkan untuk memilih zona waktu secara manual."
+        },
+        "agents_defaults_timezone": {
+          "label": "Zona waktu",
+          "help": "Selisih UTC mengikuti tanggal saat ini.\n\nPilih zona waktu. Selisih waktu dari UTC mengikuti tanggal saat ini."
+        },
+        "agents_defaults_dream_enabled": {
+          "label": "Penataan memori",
+          "help": "Atur memori otomatis; menonaktifkan tetap menyimpan memori yang ada.\n\nMenata informasi berguna dari percakapan secara otomatis. Memori yang ada tetap digunakan saat dinonaktifkan."
+        },
+        "gateway_heartbeat_enabled": {
+          "label": "Pemeriksaan berkala",
+          "help": "Periksa tugas di HEARTBEAT.md secara berkala.\n\nMemeriksa tugas di HEARTBEAT.md secara berkala."
+        },
+        "gateway_heartbeat_interval_s": {
+          "label": "Interval pemeriksaan",
+          "help": "Jeda pemeriksaan heartbeat dalam detik.\n\nGateway menjadwalkan pemeriksaan berkala saat dimulai."
+        },
+        "agents_defaults_max_tool_iterations": {
+          "label": "Putaran alat",
+          "help": "Batas putaran alat untuk tiap balasan.\n\nJumlah maksimum interaksi model dan alat dalam satu giliran."
+        },
+        "agents_defaults_max_concurrent_subagents": {
+          "label": "Subagen bersamaan",
+          "help": "Batas subagen yang berjalan bersamaan.\n\nJumlah maksimum subagen yang berjalan bersamaan."
+        },
+        "agents_defaults_max_tool_result_chars": {
+          "label": "Panjang hasil",
+          "help": "Batas karakter tiap hasil alat yang dikirim ke model.\n\nMembatasi keluaran alat yang disertakan dalam konteks model."
+        },
+        "agents_defaults_provider_retry_mode": {
+          "label": "Terus mencoba",
+          "help": "Ulangi setelah kesalahan yang dapat dipulihkan; nonaktifkan untuk percobaan standar.\n\nMencoba kembali permintaan ke model saat terjadi kesalahan sementara. Nonaktifkan untuk membatasi jumlah percobaan ulang."
+        },
+        "agents_defaults_tool_hint_max_length": {
+          "label": "Panjang ringkasan",
+          "help": "Batas karakter ringkasan aktivitas alat.\n\nPanjang maksimum petunjuk singkat aktivitas alat."
+        },
+        "tools_max_session_messages_per_minute": {
+          "label": "Frekuensi pesan",
+          "help": "Batas pesan alat ke satu sesi per menit.\n\nMembatasi frekuensi alat mengirim pesan ke percakapan."
+        },
+        "agents_defaults_unified_session": {
+          "label": "Sesi bersama",
+          "help": "Bagikan riwayat chat satu pengguna di berbagai platform.\n\nMenggunakan satu percakapan untuk satu pengguna di beberapa platform chat."
+        },
+        "tools_exec_enable": {
+          "label": "Alat shell",
+          "help": "Izinkan agen menjalankan perintah Shell.\n\nMengizinkan agen menjalankan perintah shell."
+        },
+        "tools_file_enable": {
+          "label": "Alat file",
+          "help": "Izinkan alat bawaan untuk membaca dan mengedit berkas.\n\nMengizinkan alat bawaan untuk membaca dan mengedit file."
+        },
+        "tools_web_enable": {
+          "label": "Akses web",
+          "help": "Izinkan pencarian dan pembacaan halaman web.\n\nMengizinkan pencarian web dan pengambilan halaman."
+        },
+        "tools_cli_apps_enable": {
+          "label": "Aplikasi CLI",
+          "help": "Izinkan pemasangan, pengelolaan, dan menjalankan aplikasi CLI.\n\nMengizinkan agen mengelola dan menjalankan aplikasi baris perintah."
+        },
+        "tools_my_enable": {
+          "label": "Lihat konfigurasi",
+          "help": "Izinkan agen melihat konfigurasinya.\n\nMengizinkan agen memeriksa konfigurasinya sendiri."
+        },
+        "tools_my_allow_set": {
+          "label": "Ubah konfigurasi",
+          "help": "Izinkan agen mengubah konfigurasinya.\n\nMengizinkan alat pengelolaan diri memperbarui konfigurasi."
+        },
+        "tools_exec_timeout": {
+          "label": "Durasi perintah",
+          "help": "Batas durasi bawaan untuk perintah shell.\n\nKeluaran dan waktu tunggu tidak memperpanjang batas ini. Pilih Tanpa batas waktu untuk menghapus batas durasi."
+        },
+        "tools_exec_path_prepend": {
+          "label": "Prioritas PATH",
+          "help": "Cari di direktori ini terlebih dahulu.\n\nDirektori yang ditambahkan di awal PATH. Pisahkan dengan titik koma di Windows atau titik dua di macOS dan Linux."
+        },
+        "tools_exec_path_append": {
+          "label": "Tambahan PATH",
+          "help": "Cari di direktori ini terakhir.\n\nDirektori yang ditambahkan di akhir PATH. Pisahkan dengan titik koma di Windows atau titik dua di macOS dan Linux."
+        },
+        "tools_exec_sandbox": {
+          "label": "Sandbox perintah",
+          "help": "Isolasi proses perintah; memerlukan dukungan sistem.\n\nGunakan bwrap di Linux atau Seatbelt di macOS. Pemeriksaan ruang kerja saja tidak mengisolasi proses."
+        },
+        "tools_exec_sandbox_ro_binds": {
+          "label": "Lokasi hanya-baca",
+          "help": "Lokasi tambahan hanya-baca, satu per baris.\n\nJalur tambahan yang dipasang hanya baca, satu per baris."
+        },
+        "tools_exec_sandbox_rw_binds": {
+          "label": "Lokasi dapat ditulis",
+          "help": "Lokasi tambahan yang dapat ditulis, satu per baris.\n\nJalur tambahan yang dipasang dengan izin tulis, satu per baris."
+        },
+        "tools_exec_allowed_env_keys": {
+          "label": "Variabel lingkungan",
+          "help": "Variabel tambahan untuk perintah, satu nama per baris.\n\nVariabel tambahan yang diteruskan ke perintah, satu per baris. Variabel dasar yang diperlukan tetap tersedia."
+        },
+        "tools_exec_allow_patterns": {
+          "label": "Perintah diizinkan",
+          "help": "Hanya jalankan perintah yang cocok sepenuhnya dengan aturan izin.\n\nSatu ekspresi reguler per baris. Jika diisi, setiap bagian perintah harus cocok sepenuhnya dengan salah satu aturan. Perintah yang diizinkan melewati aturan pemblokiran bawaan dan tambahan, tetapi tetap mengikuti batasan jaringan dan ruang kerja."
+        },
+        "tools_exec_deny_patterns": {
+          "label": "Perintah diblokir",
+          "help": "Blokir perintah yang cocok dengan aturan ini.\n\nAturan pemblokiran tambahan berupa ekspresi reguler, satu per baris. Aturan izin eksplisit mengesampingkan aturan pemblokiran bawaan dan tambahan."
+        },
+        "network_proxy": {
+          "label": "Proxy bersama",
+          "help": "Alamat untuk fitur yang mengaktifkan proxy. 127.0.0.1 adalah perangkat yang menjalankan nanobot."
+        },
+        "tools_web_use_proxy": {
+          "label": "Gunakan proxy",
+          "help": "Gunakan proxy bersama untuk pencarian web dan pembacaan halaman."
+        },
+        "tools_web_user_agent": {
+          "label": "Header User-Agent",
+          "help": "User-Agent untuk permintaan web; kosongkan untuk nilai default.\n\nHeader User-Agent kustom. Kosongkan untuk memakai nilai default."
+        },
+        "tools_restrict_to_workspace": {
+          "label": "Batas ruang kerja",
+          "help": "Batas ruang kerja global; izin chat WebUI diatur terpisah.\n\nKebijakan alat global. Izin setiap percakapan WebUI diatur secara terpisah."
+        },
+        "tools_ssrf_whitelist": {
+          "label": "IP diizinkan",
+          "help": "IP atau rentang CIDR diizinkan, satu per baris.\n\nIP atau rentang CIDR yang dikecualikan dari perlindungan permintaan keluar, satu per baris."
+        },
+        "tools_webui_allow_remote_package_install": {
+          "label": "Pemasangan jarak jauh",
+          "help": "Izinkan pemasangan paket dan skill jarak jauh; atur di host gateway.\n\nMengizinkan pemasangan paket dan keterampilan melalui WebUI jarak jauh. Pengaturan ini harus diubah di komputer yang menjalankan gateway."
+        },
+        "tools_cli_apps_install_timeout": {
+          "label": "Batas waktu pemasangan",
+          "help": "Batas detik untuk memasang aplikasi CLI.\n\nDurasi maksimum instalasi aplikasi CLI."
+        },
+        "tools_cli_apps_run_timeout": {
+          "label": "Batas waktu eksekusi",
+          "help": "Batas detik untuk perintah CLI.\n\nDurasi maksimum perintah aplikasi CLI."
+        },
+        "tools_cli_apps_catalog_ttl_seconds": {
+          "label": "Durasi cache",
+          "help": "Durasi cache daftar aplikasi CLI dalam detik.\n\nLama katalog aplikasi CLI disimpan dalam cache."
+        },
+        "gateway_host": {
+          "label": "Alamat gateway",
+          "help": "Alamat gateway; atur listener WebUI secara terpisah.\n\nAlamat tempat gateway menerima koneksi. Alamat WebSocket dan WebUI diatur di Kanal → WebSocket."
+        },
+        "gateway_port": {
+          "label": "Port gateway",
+          "help": "Port gateway; argumen peluncuran diutamakan.\n\nPort yang disimpan. Argumen baris perintah lebih diutamakan."
+        },
+        "gateway_restart_mode": {
+          "label": "Mode mulai ulang",
+          "help": "Pilih cara mulai ulang; Otomatis mengikuti lingkungan.\n\nCara memulai ulang proses. Mode otomatis memilih berdasarkan lingkungan host."
+        },
+        "api_host": {
+          "label": "Alamat API",
+          "help": "Tetapkan kunci sebelum akses jaringan; mulai ulang API setelah perubahan.\n\nKunci API diperlukan untuk menerima koneksi pada alamat selain localhost. Atur kunci di Sistem, lalu mulai ulang layanan API untuk menerapkan perubahan."
+        },
+        "api_timeout": {
+          "label": "Batas waktu API",
+          "help": "Batas detik tiap permintaan API; mulai ulang untuk menerapkan.\n\nDurasi maksimum permintaan. Mulai ulang layanan API untuk menerapkan perubahan."
+        },
+        "tools_image_generation_save_dir": {
+          "label": "Direktori penyimpanan",
+          "help": "Lokasi relatif dalam direktori media; gambar yang ada tidak dipindahkan.\n\nJalur relatif di dalam folder media nanobot. Gambar yang ada tidak dipindahkan."
+        }
       },
       "groups": {
-        "chat": {"title": "Izin WebUI", "help": "Atur akses layanan lokal dan izin chat default.\n\nAkses layanan lokal dan izin chat default."},
-        "identity": {"title": "Zona waktu", "help": "Pilih zona waktu untuk tugas terjadwal."},
-        "memory": {"title": "Memori", "help": "Aktifkan atau nonaktifkan pengaturan memori otomatis."},
-        "heartbeat": {"title": "Jadwal pemeriksaan berkala", "help": "Atur pemeriksaan tugas berkala."},
-        "execution": {"title": "Batas eksekusi", "help": "Atur batas alat dan percobaan ulang permintaan."},
-        "sessions": {"title": "Percakapan", "help": "Atur chat bersama di berbagai platform."},
-        "tools": {"title": "Alat bawaan", "help": "Pilih alat yang boleh digunakan agen."},
-        "shell": {"title": "Shell dan sandbox", "help": "Atur batas waktu perintah, lingkungan, dan aturan akses."},
-        "proxy": {"title": "Proxy bersama", "help": "Tetapkan satu alamat untuk fitur yang menggunakan proxy."},
-        "network": {"title": "Koneksi web", "help": "Atur penggunaan proxy dan User-Agent untuk permintaan web."},
-        "safety": {"title": "Izin global", "help": "Atur batas ruang kerja, pengecualian jaringan, dan pemasangan jarak jauh.\n\nPembatasan ruang kerja, jaringan privat, dan instalasi jarak jauh."},
-        "cli": {"title": "Batas CLI", "help": "Atur batas waktu pemasangan dan eksekusi, serta durasi cache daftar.\n\nBatas waktu instalasi, eksekusi, dan cache katalog."},
-        "gateway": {"title": "Gateway", "help": "Atur opsi penerapan dan mulai ulang."},
-        "api": {"title": "Pengaturan API", "help": "Atur alamat listener dan batas waktu permintaan."},
-        "storage": {"title": "Penyimpanan gambar", "help": "Pilih lokasi penyimpanan gambar yang dibuat."},
-        "maintenance": {"title": "Pengaturan memori", "help": ""},
-        "web": {"title": "Akses web", "help": ""},
-        "applications": {"title": "Aplikasi CLI", "help": ""}
+        "chat": {
+          "title": "Izin WebUI",
+          "help": "Atur akses layanan lokal dan izin chat default.\n\nAkses layanan lokal dan izin chat default."
+        },
+        "identity": {
+          "title": "Zona waktu",
+          "help": "Pilih zona waktu untuk tugas terjadwal."
+        },
+        "memory": {
+          "title": "Memori",
+          "help": "Aktifkan atau nonaktifkan pengaturan memori otomatis."
+        },
+        "heartbeat": {
+          "title": "Jadwal pemeriksaan berkala",
+          "help": "Atur pemeriksaan tugas berkala."
+        },
+        "execution": {
+          "title": "Batas eksekusi",
+          "help": "Atur batas alat dan percobaan ulang permintaan."
+        },
+        "sessions": {
+          "title": "Percakapan",
+          "help": "Atur chat bersama di berbagai platform."
+        },
+        "tools": {
+          "title": "Alat bawaan",
+          "help": "Pilih alat yang boleh digunakan agen."
+        },
+        "shell": {
+          "title": "Shell dan sandbox",
+          "help": "Atur batas waktu perintah, lingkungan, dan aturan akses."
+        },
+        "proxy": {
+          "title": "Proxy bersama",
+          "help": "Tetapkan satu alamat untuk fitur yang menggunakan proxy."
+        },
+        "network": {
+          "title": "Koneksi web",
+          "help": "Atur penggunaan proxy dan User-Agent untuk permintaan web."
+        },
+        "safety": {
+          "title": "Izin global",
+          "help": "Atur batas ruang kerja, pengecualian jaringan, dan pemasangan jarak jauh.\n\nPembatasan ruang kerja, jaringan privat, dan instalasi jarak jauh."
+        },
+        "cli": {
+          "title": "Batas CLI",
+          "help": "Atur batas waktu pemasangan dan eksekusi, serta durasi cache daftar.\n\nBatas waktu instalasi, eksekusi, dan cache katalog."
+        },
+        "gateway": {
+          "title": "Gateway",
+          "help": "Atur opsi penerapan dan mulai ulang."
+        },
+        "api": {
+          "title": "Pengaturan API",
+          "help": "Atur alamat listener dan batas waktu permintaan."
+        },
+        "storage": {
+          "title": "Penyimpanan gambar",
+          "help": "Pilih lokasi penyimpanan gambar yang dibuat."
+        },
+        "maintenance": {
+          "title": "Pengaturan memori",
+          "help": ""
+        },
+        "web": {
+          "title": "Akses web",
+          "help": ""
+        },
+        "applications": {
+          "title": "Aplikasi CLI",
+          "help": ""
+        }
       },
-      "save": "Simpan perubahan", "saving": "Menyimpan…", "discard": "Buang perubahan", "saved": "Tersimpan.",
-      "restart": "Mulai ulang nanobot", "restartHelp": "Mulai ulang untuk menerapkan perubahan. Argumen baris perintah dan variabel lingkungan mungkin lebih diutamakan.",
-      "search": "Cari pengaturan lanjutan", "noResults": "Tidak ada pengaturan yang cocok.", "pending": "Perubahan belum disimpan",
+      "save": "Simpan perubahan",
+      "saving": "Menyimpan…",
+      "discard": "Buang perubahan",
+      "saved": "Tersimpan.",
+      "restart": "Mulai ulang nanobot",
+      "restartHelp": "Mulai ulang untuk menerapkan perubahan. Argumen baris perintah dan variabel lingkungan mungkin lebih diutamakan.",
+      "search": "Cari pengaturan lanjutan",
+      "noResults": "Tidak ada pengaturan yang cocok.",
+      "pending": "Perubahan belum disimpan",
       "idleCompaction": {
         "label": "Padatkan sesi tidak aktif secara otomatis",
         "help": "Padatkan konteks secara otomatis saat batas waktu tidak aktif tercapai untuk mengurangi penggunaan token pada permintaan berikutnya.",
@@ -560,9 +746,15 @@
         "minutes": "menit",
         "numberError": "Masukkan jumlah menit berupa bilangan bulat nol atau lebih."
       },
-      "numberError": "Masukkan angka yang valid dalam rentang yang diizinkan.", "activeModel": "Gunakan model aktif", "none": "Tidak ada",
-      "auto": "Otomatis", "manual": "Manual", "standard": "Standar", "persistent": "Terus-menerus",
-      "unavailable": "Perbarui gateway untuk mengedit pengaturan ini.", "advancedOptions": "Opsi lanjutan"
+      "numberError": "Masukkan angka yang valid dalam rentang yang diizinkan.",
+      "activeModel": "Gunakan model aktif",
+      "none": "Tidak ada",
+      "auto": "Otomatis",
+      "manual": "Manual",
+      "standard": "Standar",
+      "persistent": "Terus-menerus",
+      "unavailable": "Perbarui gateway untuk mengedit pengaturan ini.",
+      "advancedOptions": "Opsi lanjutan"
     },
     "backToChat": "Kembali ke chat",
     "sidebar": {
@@ -1214,17 +1406,31 @@
       }
     },
     "api": {
-      "title": "Server API", "openaiCompatible": "API kompatibel OpenAI", "description": "Hubungkan melalui API yang kompatibel dengan OpenAI.",
-      "start": "Mulai server API", "starting": "Memulai...", "stop": "Hentikan", "stopping": "Menghentikan...",
-      "access": "Akses", "thisDevice": "Perangkat ini", "localNetwork": "Jaringan lokal",
-      "localHelp": "Hanya perangkat ini yang dapat terhubung.", "networkHelp": "Akses LAN memerlukan kunci API.\n\nPerangkat lain dapat terhubung; kunci API diperlukan.",
-      "port": "Port", "portHelp": "Port lokal untuk layanan API.", "apiKey": "Kunci API", "apiKeyHelp": "Kirim kunci sebagai Bearer token.",
-      "apiKeyRequired": "Wajib sebelum membuka API ke jaringan.", "apiKeyPlaceholder": "Masukkan kunci API",
+      "title": "Server API",
+      "openaiCompatible": "API kompatibel OpenAI",
+      "description": "Hubungkan melalui API yang kompatibel dengan OpenAI.",
+      "start": "Mulai server API",
+      "starting": "Memulai...",
+      "stop": "Hentikan",
+      "stopping": "Menghentikan...",
+      "access": "Akses",
+      "thisDevice": "Perangkat ini",
+      "localNetwork": "Jaringan lokal",
+      "localHelp": "Hanya perangkat ini yang dapat terhubung.",
+      "networkHelp": "Akses LAN memerlukan kunci API.\n\nPerangkat lain dapat terhubung; kunci API diperlukan.",
+      "port": "Port",
+      "portHelp": "Port lokal untuk layanan API.",
+      "apiKey": "Kunci API",
+      "apiKeyHelp": "Kirim kunci sebagai Bearer token.",
+      "apiKeyRequired": "Wajib sebelum membuka API ke jaringan.",
+      "apiKeyPlaceholder": "Masukkan kunci API",
       "autoInstall": "Paket yang diperlukan server API akan dipasang otomatis saat server dimulai."
     },
     "observability": {
-      "title": "Pelacakan eksekusi", "configured": "Kredensial pelacakan sudah tersedia untuk nanobot.",
-      "environment": "Atur LANGFUSE_SECRET_KEY dan LANGFUSE_PUBLIC_KEY, lalu mulai ulang nanobot.", "enable": "Aktifkan pelacakan"
+      "title": "Pelacakan eksekusi",
+      "configured": "Kredensial pelacakan sudah tersedia untuk nanobot.",
+      "environment": "Atur LANGFUSE_SECRET_KEY dan LANGFUSE_PUBLIC_KEY, lalu mulai ulang nanobot.",
+      "enable": "Aktifkan pelacakan"
     },
     "legal": {
       "thirdPartyBrands": "Nama produk, logo, dan merek adalah milik pemiliknya masing-masing. Penggunaan hanya untuk identifikasi dan tidak menyiratkan dukungan."
@@ -1750,7 +1956,8 @@
       "disabled": "Dijeda",
       "local": "Menunggu pemicu",
       "none": "Tidak ada jadwal berikutnya"
-    }
+    },
+    "careerDescription": "Persiapan terkait dan tugasnya juga akan dihapus dari meja kerja. CV dan lowongan dalam koleksi tetap disimpan."
   },
   "connection": {
     "idle": "Tidak aktif",
@@ -2637,6 +2844,43 @@
     "currentUse": "Sedang digunakan",
     "viewOnlyHint": "Melihat versi tidak mengubah materi untuk persiapan ini.",
     "textSource": "Teks ditempel",
-    "addedAt": "Ditambahkan"
+    "addedAt": "Ditambahkan",
+    "modelMaterials": "Lihat bahan referensi",
+    "privacyHint": "Informasi kontak umum dan jalur lokal disembunyikan. Hanya materi persiapan ini yang disertakan; periksa isinya di bawah.",
+    "contextTruncated": "Sebagian materi dipersingkat. Anda dapat melengkapinya dalam percakapan.",
+    "chatLoadError": "Materi atau percakapan tidak dapat dimuat. Segarkan untuk mencoba lagi.",
+    "chatFailure": "Percakapan ini belum selesai. Periksa koneksi atau pengaturan model, lalu tanyakan kembali.",
+    "olderMessages": "Muat pesan sebelumnya",
+    "replyMaterials": "Materi: {{resume}} · v{{resumeVersion}} / {{job}} · v{{jobVersion}}",
+    "chatWelcome": "Materi siap. Tanyakan apa yang perlu dipersiapkan lebih dahulu untuk lowongan ini berdasarkan pengalaman Anda.",
+    "chatInput": "Tanya asisten karier",
+    "stop": "Hentikan balasan",
+    "availabilityTitle": "Ketersediaan untuk persiapan ini",
+    "availabilitySource": "Ketentuan yang diisi saat persiapan ini dibuat.",
+    "availabilityDays": "Hari tersedia per minggu",
+    "availabilityMonths": "Durasi magang",
+    "availabilityDate": "Tanggal mulai paling awal",
+    "availabilityLocations": "Lokasi pilihan",
+    "daysValue": "{{count}} hari per minggu",
+    "monthsValue": "{{count}} bulan",
+    "openResumeLibrary": "Buka koleksi CV",
+    "openJobLibrary": "Buka koleksi lowongan",
+    "resumeFacts": "Detail tambahan CV",
+    "jobFacts": "Detail tambahan lowongan",
+    "conditionMismatch": "Ketersediaan berbeda dari CV",
+    "conditionMismatchHint": "Persiapan ini memakai ketentuan yang diisi di sini. Periksa CV; isi terkonfirmasi tidak berubah.",
+    "conditionComparison": "Diisi di sini: {{selected}}; CV: {{resume}}.",
+    "conditionEvidence": "Kutipan CV: “{{text}}”",
+    "education": "Pendidikan",
+    "skills": "Keahlian",
+    "projects": "Proyek",
+    "interviewExperience": "Pengalaman wawancara pengguna",
+    "valueYes": "Ya",
+    "valueNo": "Tidak",
+    "daysValue_one": "{{count}} hari per minggu",
+    "daysValue_other": "{{count}} hari per minggu",
+    "monthsValue_one": "{{count}} bulan",
+    "monthsValue_other": "{{count}} bulan",
+    "plansUnsupported": "Host ini belum mendukung penyimpanan rencana. Anda tetap dapat mengobrol."
   }
 }

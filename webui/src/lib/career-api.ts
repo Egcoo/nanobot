@@ -2,6 +2,7 @@ import { ApiError, API_READ_TIMEOUT_MS, mutation, request, type WebUIMutationTra
 import type {
   CareerState, CareerThread, CareerWorkspace, JobAction, JobVersion, JobWrite,
   PersonalConditions, ResumeAction, ResumeVersion, ResumeWrite,
+  CareerConversationData,
 } from "@/lib/career-types";
 
 function record(value: unknown): value is Record<string, unknown> {
@@ -46,6 +47,7 @@ export async function fetchCareerState(token: string, reference: string, signal?
     || !Array.isArray(value.resumes) || !value.resumes.every(resume)
     || !Array.isArray(value.jobs) || !value.jobs.every(job)
     || !Array.isArray(value.threads) || !value.threads.every(thread)
+    || (value.deleted_thread_ids !== undefined && (!Array.isArray(value.deleted_thread_ids) || !value.deleted_thread_ids.every((item) => typeof item === "string")))
     || !Array.isArray(value.plans) || !value.plans.every((item) => record(item)
       && ["id", "analysis_id", "career_thread_id"].every((key) => typeof item[key] === "string") && item.status === "confirmed")
     || !Array.isArray(value.tasks) || !value.tasks.every((item) => record(item)
@@ -79,4 +81,29 @@ export async function confirmCareerJob(transport: WebUIMutationTransport, refere
 export async function createCareerThread(transport: WebUIMutationTransport, reference: string, resumeId: string, jobId: string, conditions: PersonalConditions): Promise<CareerThread> {
   const result = await mutation<unknown>(transport, "career.thread.create", { workspace_ref: reference, resume_version_id: resumeId, job_version_id: jobId, conditions });
   return thread(result) ? result : invalid();
+}
+
+export async function fetchCareerConversation(token: string, reference: string, threadId: string, signal?: AbortSignal): Promise<CareerConversationData> {
+  const value = await request<unknown>(`/api/career/conversation?workspace_ref=${encodeURIComponent(reference)}&thread_id=${encodeURIComponent(threadId)}`, token, { signal }, API_READ_TIMEOUT_MS);
+  if (!record(value) || value.thread_id !== threadId || typeof value.truncated !== "boolean"
+    || !record(value.preview) || !record(value.preview.resume) || !record(value.preview.job)
+    || ![value.preview.resume, value.preview.job].every((item) => typeof item.id === "string" && typeof item.name === "string" && typeof item.text === "string" && Number.isInteger(item.version))
+    || !record(value.preview.resume.profile) || !record(value.preview.job.requirements) || typeof value.preview.job.company !== "string"
+    || !record(value.preview.conditions) || !Array.isArray(value.preview.conditions.locations)
+    || !value.preview.conditions.locations.every((item) => typeof item === "string")
+    || (value.preview.conditions.available_from !== undefined && value.preview.conditions.available_from !== null && typeof value.preview.conditions.available_from !== "string")
+    || !["days_per_week", "available_months"].every((key) => record(value.preview) && record(value.preview.conditions) && (value.preview.conditions[key] === null || Number.isInteger(value.preview.conditions[key])))
+    || typeof value.preview.truncated !== "boolean" || !Array.isArray(value.preview.availability_conflicts)
+    || !value.preview.availability_conflicts.every((item) => record(item) && typeof item.field === "string" && Number.isInteger(item.available) && Number.isInteger(item.required))
+    || (value.preview.resume_condition_differences !== undefined && (!Array.isArray(value.preview.resume_condition_differences)
+      || !value.preview.resume_condition_differences.every((item) => record(item)
+        && ["days_per_week", "available_months"].includes(String(item.field))
+        && Number.isInteger(item.selected) && Number.isInteger(item.resume)
+        && typeof item.evidence === "string" && item.evidence.length <= 200)))
+    || !Array.isArray(value.analyses) || !value.analyses.every((item) => record(item)
+      && item.career_thread_id === threadId && typeof item.id === "string" && (item.turn_id === null || typeof item.turn_id === "string")
+      && typeof item.resume_name === "string" && typeof item.job_name === "string" && typeof item.created_at === "string"
+      && Number.isInteger(item.resume_version) && Number.isInteger(item.job_version)
+      && ["queued", "running", "succeeded", "failed", "cancelled"].includes(String(item.status)))) return invalid();
+  return value as unknown as CareerConversationData;
 }

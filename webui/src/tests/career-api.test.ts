@@ -1,7 +1,31 @@
 import { afterEach, expect, it, vi } from "vitest";
-import { fetchCareerState, fetchCareerWorkspaces, saveCareerJob } from "@/lib/career-api";
+import { fetchCareerConversation, fetchCareerState, fetchCareerWorkspaces, saveCareerJob } from "@/lib/career-api";
 
 afterEach(() => vi.unstubAllGlobals());
+
+it("rejects a conversation response for another preparation before displaying its sources", async () => {
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ thread_id: "other", preview: {}, analyses: [] }), { headers: { "content-type": "application/json" } })));
+  await expect(fetchCareerConversation("engineering-token", "workspace", "current")).rejects.toThrow("career_invalid_response");
+});
+
+it("accepts existing conversation previews and validates the optional condition comparison before rendering", async () => {
+  const payload = {
+    thread_id: "current", truncated: false, analyses: [],
+    preview: {
+      resume: { id: "resume", name: "Resume", version: 1, text: "Resume text", profile: {} },
+      job: { id: "job", name: "Job", version: 1, text: "Job text", company: "Demo", requirements: {} },
+      conditions: { days_per_week: 5, available_months: 5, locations: [] },
+      availability_conflicts: [], truncated: false,
+    },
+  };
+  const read = (value: unknown) => vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify(value), { headers: { "content-type": "application/json" } })));
+  read(payload);
+  expect((await fetchCareerConversation("engineering-token", "workspace", "current")).preview.conditions.days_per_week).toBe(5);
+  read({ ...payload, preview: { ...payload.preview, resume_condition_differences: [{ field: "days_per_week", selected: 5, resume: "four", evidence: "Availability: 4 days per week." }] } });
+  await expect(fetchCareerConversation("engineering-token", "workspace", "current")).rejects.toThrow("career_invalid_response");
+  read({ ...payload, preview: { ...payload.preview, conditions: { ...payload.preview.conditions, available_from: {} } } });
+  await expect(fetchCareerConversation("engineering-token", "workspace", "current")).rejects.toThrow("career_invalid_response");
+});
 
 it("reads with the existing bearer authentication and abort signal", async () => {
   const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ workspaces: [{ ref: "project", name: "Project", is_default: true }] }), { headers: { "content-type": "application/json" } }));
@@ -28,6 +52,7 @@ it.each([
 it.each([
   { workspace_ref: "wrong" },
   { workspace_ref: "workspace", workspace_id: "id", resumes: [], jobs: [], threads: [{ conditions: { days_per_week: {} } }], plans: [], tasks: [], chat_available: {} },
+  { workspace_ref: "workspace", workspace_id: "id", resumes: [], jobs: [], threads: [], plans: [], tasks: [], chat_available: {}, deleted_thread_ids: [17] },
 ])("rejects malformed or wrong-workspace read responses before rendering", async (payload) => {
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify(payload), { headers: { "content-type": "application/json" } })));
   await expect(fetchCareerState("engineering-token", "workspace")).rejects.toThrow("career_invalid_response");

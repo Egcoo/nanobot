@@ -487,72 +487,258 @@
         "rangeError": "1 から {{max}} までの整数で秒数を入力するか、「時間制限なし」を選んでください。"
       },
       "fields": {
-        "agents_defaults_timezone_mode": {"label": "システムの時間帯", "help": "オフにすると時間帯を指定できます。\n\nオフにすると手動でタイムゾーンを選択できます。"},
-        "agents_defaults_timezone": {"label": "タイムゾーン", "help": "UTC オフセットは今日の日付に基づきます。\n\nタイムゾーンを選択します。UTC との時差は現在の日付に基づきます。"},
-        "agents_defaults_dream_enabled": {"label": "記憶の整理", "help": "メモリーを自動整理します。オフにしても既存のメモリーは使えます。\n\n会話の有用な情報を自動で整理します。オフにしても既存の記憶は使用できます。"},
-        "gateway_heartbeat_enabled": {"label": "定期チェック", "help": "HEARTBEAT.md のタスクを定期的に確認します。"},
-        "gateway_heartbeat_interval_s": {"label": "確認間隔", "help": "ハートビートの確認間隔（秒）です。\n\nゲートウェイの起動時に定期チェックを予約します。"},
-        "agents_defaults_max_tool_iterations": {"label": "ツールの回数", "help": "返信ごとのツール実行回数の上限です。\n\n1 ターンでモデルとツールがやり取りする回数の上限です。"},
-        "agents_defaults_max_concurrent_subagents": {"label": "同時サブエージェント", "help": "同時に実行するサブエージェントの上限です。\n\n同時に実行するサブエージェントの最大数です。"},
-        "agents_defaults_max_tool_result_chars": {"label": "結果の長さ", "help": "モデルに渡すツール結果ごとの文字数上限です。\n\nモデルのコンテキストに含めるツール出力を制限します。"},
-        "agents_defaults_provider_retry_mode": {"label": "再試行を継続", "help": "回復可能なエラーで再試行します。オフでは標準の再試行を使います。\n\nモデルへのリクエストが一時的なエラーで失敗した場合、成功するまで再試行します。オフにすると再試行回数を制限します。"},
-        "agents_defaults_tool_hint_max_length": {"label": "概要の長さ", "help": "ツールの実行概要に表示する文字数上限です。\n\nツールの動作を簡潔に表示する説明文の最大文字数です。"},
-        "tools_max_session_messages_per_minute": {"label": "メッセージ頻度", "help": "同じセッションにツールが送る毎分のメッセージ上限です。\n\nツールが会話にメッセージを送信する頻度を制限します。"},
-        "agents_defaults_unified_session": {"label": "セッション共有", "help": "同じユーザーのチャット履歴を複数のプラットフォームで共有します。\n\n1 人のユーザーが複数のチャットプラットフォームで同じ会話を使用します。"},
-        "tools_exec_enable": {"label": "シェルツール", "help": "エージェントによる Shell コマンドの実行を許可します。\n\nエージェントによるシェルコマンドの実行を許可します。"},
-        "tools_file_enable": {"label": "ファイルツール", "help": "組み込みのファイル読み取り・編集ツールを許可します。"},
-        "tools_web_enable": {"label": "ウェブアクセス", "help": "ウェブ検索とページの読み取りを許可します。\n\nウェブ検索とページ取得を許可します。"},
-        "tools_cli_apps_enable": {"label": "CLI アプリ", "help": "CLI アプリのインストール・管理・実行を許可します。\n\nエージェントによる CLI アプリの管理と実行を許可します。"},
-        "tools_my_enable": {"label": "設定を確認", "help": "エージェントによる自身の設定の確認を許可します。\n\nエージェントが自身の設定を確認できるようにします。"},
-        "tools_my_allow_set": {"label": "設定を変更", "help": "エージェントによる自身の設定の変更を許可します。\n\n自己管理ツールによる設定の更新を許可します。"},
-        "tools_exec_timeout": {"label": "コマンドの実行時間", "help": "シェルコマンドの既定の実行時間上限です。\n\n出力や待機によって上限は延長されません。「時間制限なし」を選ぶと実行時間の上限がなくなります。"},
-        "tools_exec_path_prepend": {"label": "PATH の優先検索", "help": "これらのディレクトリを先に検索します。\n\nPATH の先頭に追加するディレクトリです。Windows ではセミコロン、macOS と Linux ではコロンで区切ります。"},
-        "tools_exec_path_append": {"label": "PATH の末尾追加", "help": "これらのディレクトリを最後に検索します。\n\nPATH の末尾に追加するディレクトリです。Windows ではセミコロン、macOS と Linux ではコロンで区切ります。"},
-        "tools_exec_sandbox": {"label": "コマンドサンドボックス", "help": "コマンドのプロセスを隔離します。システムの対応が必要です。\n\nLinux では bwrap、macOS では Seatbelt を使用します。ワークスペースの検査だけではプロセスは隔離されません。"},
-        "tools_exec_sandbox_ro_binds": {"label": "読み取り専用パス", "help": "追加の読み取り専用パスを1行に1つ指定します。\n\n読み取り専用で追加マウントするパス。1 行に 1 つ指定します。"},
-        "tools_exec_sandbox_rw_binds": {"label": "書き込み可能パス", "help": "追加の書き込み可能パスを1行に1つ指定します。\n\n書き込み可能で追加マウントするパス。1 行に 1 つ指定します。"},
-        "tools_exec_allowed_env_keys": {"label": "環境変数", "help": "コマンドに追加で渡す変数名を1行に1つ指定します。\n\nコマンドに渡す環境変数を追加します。1 行に 1 つ指定してください。動作に必要な基本の環境変数は引き続き渡されます。"},
-        "tools_exec_allow_patterns": {"label": "許可コマンド", "help": "許可ルールに完全一致するコマンドのみ実行します。\n\n1 行に 1 つ正規表現を指定します。設定すると、コマンドの各部分がいずれかのルールに完全一致する場合のみ実行できます。許可されたコマンドには組み込み・追加の禁止ルールを適用しませんが、ネットワークとワークスペースの制限は適用されます。"},
-        "tools_exec_deny_patterns": {"label": "禁止コマンド", "help": "これらのルールに一致するコマンドを禁止します。\n\n追加の禁止ルールを正規表現で 1 行に 1 つ指定します。明示的な許可ルールは、組み込み・追加の禁止ルールより優先されます。"},
-        "network_proxy": {"label": "共有プロキシ", "help": "プロキシを有効にした機能で共有するアドレスです。127.0.0.1 は nanobot を実行する端末を指します。"},
-        "tools_web_use_proxy": {"label": "プロキシを使う", "help": "ウェブ検索とページの読み取りに共有プロキシを使います。"},
-        "tools_web_user_agent": {"label": "User-Agent ヘッダー", "help": "ウェブ要求の User-Agent です。空欄では既定値を使います。\n\nカスタムの User-Agent ヘッダー。空欄の場合は既定値を使用します。"},
-        "tools_restrict_to_workspace": {"label": "ワークスペース制限", "help": "ワークスペースの全体制限です。WebUI のチャット権限は別に設定します。\n\nツール全体のアクセス方針です。WebUI の会話ごとの権限は別途設定します。"},
-        "tools_ssrf_whitelist": {"label": "許可 IP", "help": "許可する IP または CIDR を1行に1つ指定します。\n\n送信リクエストの保護から除外する IP/CIDR 範囲。1 行に 1 つ指定します。"},
-        "tools_webui_allow_remote_package_install": {"label": "リモートインストール", "help": "パッケージとスキルのリモートインストールを許可します。ゲートウェイ端末で設定します。\n\nリモートの WebUI から追加パッケージやスキルをインストールできるようにします。この設定はゲートウェイを実行しているマシン上で変更する必要があります。"},
-        "tools_cli_apps_install_timeout": {"label": "インストール制限時間", "help": "CLI アプリのインストールに待つ秒数の上限です。\n\nCLI アプリのインストール時間の上限です。"},
-        "tools_cli_apps_run_timeout": {"label": "実行の制限時間", "help": "CLI コマンドの実行秒数の上限です。\n\nCLI アプリのコマンド実行時間の上限です。"},
-        "tools_cli_apps_catalog_ttl_seconds": {"label": "キャッシュ期間", "help": "CLI アプリ一覧をキャッシュする秒数です。\n\nCLI アプリのカタログをキャッシュする期間です。"},
-        "gateway_host": {"label": "ゲートウェイアドレス", "help": "ゲートウェイのアドレスです。WebUI の待ち受けは別に設定します。\n\nゲートウェイの待ち受けアドレスです。WebSocket と WebUI のアドレスは「チャンネル → WebSocket」で設定します。"},
-        "gateway_port": {"label": "ゲートウェイのポート", "help": "ゲートウェイのポートです。起動引数が優先されます。\n\n保存するポート番号。コマンドライン引数が優先されます。"},
-        "gateway_restart_mode": {"label": "再起動モード", "help": "再起動方法を選びます。「自動」は環境に合わせます。\n\nプロセスの再起動方法。自動モードではホスト環境に応じて選択します。"},
-        "api_host": {"label": "API アドレス", "help": "ネットワーク公開前にキーを設定し、変更後は API を再起動します。\n\nlocalhost 以外のアドレスで待ち受けるには API キーが必要です。「システム」でキーを設定し、API サービスを再起動して変更を反映してください。"},
-        "api_timeout": {"label": "API 制限時間", "help": "API 要求の最大秒数です。適用には再起動が必要です。\n\nリクエストの時間制限です。API サービスの再起動後に反映されます。"},
-        "tools_image_generation_save_dir": {"label": "保存先", "help": "メディア内の相対パスです。既存の画像は移動しません。\n\nnanobot のメディアディレクトリ内の相対パス。既存の画像は移動しません。"}
+        "agents_defaults_timezone_mode": {
+          "label": "システムの時間帯",
+          "help": "オフにすると時間帯を指定できます。\n\nオフにすると手動でタイムゾーンを選択できます。"
+        },
+        "agents_defaults_timezone": {
+          "label": "タイムゾーン",
+          "help": "UTC オフセットは今日の日付に基づきます。\n\nタイムゾーンを選択します。UTC との時差は現在の日付に基づきます。"
+        },
+        "agents_defaults_dream_enabled": {
+          "label": "記憶の整理",
+          "help": "メモリーを自動整理します。オフにしても既存のメモリーは使えます。\n\n会話の有用な情報を自動で整理します。オフにしても既存の記憶は使用できます。"
+        },
+        "gateway_heartbeat_enabled": {
+          "label": "定期チェック",
+          "help": "HEARTBEAT.md のタスクを定期的に確認します。"
+        },
+        "gateway_heartbeat_interval_s": {
+          "label": "確認間隔",
+          "help": "ハートビートの確認間隔（秒）です。\n\nゲートウェイの起動時に定期チェックを予約します。"
+        },
+        "agents_defaults_max_tool_iterations": {
+          "label": "ツールの回数",
+          "help": "返信ごとのツール実行回数の上限です。\n\n1 ターンでモデルとツールがやり取りする回数の上限です。"
+        },
+        "agents_defaults_max_concurrent_subagents": {
+          "label": "同時サブエージェント",
+          "help": "同時に実行するサブエージェントの上限です。\n\n同時に実行するサブエージェントの最大数です。"
+        },
+        "agents_defaults_max_tool_result_chars": {
+          "label": "結果の長さ",
+          "help": "モデルに渡すツール結果ごとの文字数上限です。\n\nモデルのコンテキストに含めるツール出力を制限します。"
+        },
+        "agents_defaults_provider_retry_mode": {
+          "label": "再試行を継続",
+          "help": "回復可能なエラーで再試行します。オフでは標準の再試行を使います。\n\nモデルへのリクエストが一時的なエラーで失敗した場合、成功するまで再試行します。オフにすると再試行回数を制限します。"
+        },
+        "agents_defaults_tool_hint_max_length": {
+          "label": "概要の長さ",
+          "help": "ツールの実行概要に表示する文字数上限です。\n\nツールの動作を簡潔に表示する説明文の最大文字数です。"
+        },
+        "tools_max_session_messages_per_minute": {
+          "label": "メッセージ頻度",
+          "help": "同じセッションにツールが送る毎分のメッセージ上限です。\n\nツールが会話にメッセージを送信する頻度を制限します。"
+        },
+        "agents_defaults_unified_session": {
+          "label": "セッション共有",
+          "help": "同じユーザーのチャット履歴を複数のプラットフォームで共有します。\n\n1 人のユーザーが複数のチャットプラットフォームで同じ会話を使用します。"
+        },
+        "tools_exec_enable": {
+          "label": "シェルツール",
+          "help": "エージェントによる Shell コマンドの実行を許可します。\n\nエージェントによるシェルコマンドの実行を許可します。"
+        },
+        "tools_file_enable": {
+          "label": "ファイルツール",
+          "help": "組み込みのファイル読み取り・編集ツールを許可します。"
+        },
+        "tools_web_enable": {
+          "label": "ウェブアクセス",
+          "help": "ウェブ検索とページの読み取りを許可します。\n\nウェブ検索とページ取得を許可します。"
+        },
+        "tools_cli_apps_enable": {
+          "label": "CLI アプリ",
+          "help": "CLI アプリのインストール・管理・実行を許可します。\n\nエージェントによる CLI アプリの管理と実行を許可します。"
+        },
+        "tools_my_enable": {
+          "label": "設定を確認",
+          "help": "エージェントによる自身の設定の確認を許可します。\n\nエージェントが自身の設定を確認できるようにします。"
+        },
+        "tools_my_allow_set": {
+          "label": "設定を変更",
+          "help": "エージェントによる自身の設定の変更を許可します。\n\n自己管理ツールによる設定の更新を許可します。"
+        },
+        "tools_exec_timeout": {
+          "label": "コマンドの実行時間",
+          "help": "シェルコマンドの既定の実行時間上限です。\n\n出力や待機によって上限は延長されません。「時間制限なし」を選ぶと実行時間の上限がなくなります。"
+        },
+        "tools_exec_path_prepend": {
+          "label": "PATH の優先検索",
+          "help": "これらのディレクトリを先に検索します。\n\nPATH の先頭に追加するディレクトリです。Windows ではセミコロン、macOS と Linux ではコロンで区切ります。"
+        },
+        "tools_exec_path_append": {
+          "label": "PATH の末尾追加",
+          "help": "これらのディレクトリを最後に検索します。\n\nPATH の末尾に追加するディレクトリです。Windows ではセミコロン、macOS と Linux ではコロンで区切ります。"
+        },
+        "tools_exec_sandbox": {
+          "label": "コマンドサンドボックス",
+          "help": "コマンドのプロセスを隔離します。システムの対応が必要です。\n\nLinux では bwrap、macOS では Seatbelt を使用します。ワークスペースの検査だけではプロセスは隔離されません。"
+        },
+        "tools_exec_sandbox_ro_binds": {
+          "label": "読み取り専用パス",
+          "help": "追加の読み取り専用パスを1行に1つ指定します。\n\n読み取り専用で追加マウントするパス。1 行に 1 つ指定します。"
+        },
+        "tools_exec_sandbox_rw_binds": {
+          "label": "書き込み可能パス",
+          "help": "追加の書き込み可能パスを1行に1つ指定します。\n\n書き込み可能で追加マウントするパス。1 行に 1 つ指定します。"
+        },
+        "tools_exec_allowed_env_keys": {
+          "label": "環境変数",
+          "help": "コマンドに追加で渡す変数名を1行に1つ指定します。\n\nコマンドに渡す環境変数を追加します。1 行に 1 つ指定してください。動作に必要な基本の環境変数は引き続き渡されます。"
+        },
+        "tools_exec_allow_patterns": {
+          "label": "許可コマンド",
+          "help": "許可ルールに完全一致するコマンドのみ実行します。\n\n1 行に 1 つ正規表現を指定します。設定すると、コマンドの各部分がいずれかのルールに完全一致する場合のみ実行できます。許可されたコマンドには組み込み・追加の禁止ルールを適用しませんが、ネットワークとワークスペースの制限は適用されます。"
+        },
+        "tools_exec_deny_patterns": {
+          "label": "禁止コマンド",
+          "help": "これらのルールに一致するコマンドを禁止します。\n\n追加の禁止ルールを正規表現で 1 行に 1 つ指定します。明示的な許可ルールは、組み込み・追加の禁止ルールより優先されます。"
+        },
+        "network_proxy": {
+          "label": "共有プロキシ",
+          "help": "プロキシを有効にした機能で共有するアドレスです。127.0.0.1 は nanobot を実行する端末を指します。"
+        },
+        "tools_web_use_proxy": {
+          "label": "プロキシを使う",
+          "help": "ウェブ検索とページの読み取りに共有プロキシを使います。"
+        },
+        "tools_web_user_agent": {
+          "label": "User-Agent ヘッダー",
+          "help": "ウェブ要求の User-Agent です。空欄では既定値を使います。\n\nカスタムの User-Agent ヘッダー。空欄の場合は既定値を使用します。"
+        },
+        "tools_restrict_to_workspace": {
+          "label": "ワークスペース制限",
+          "help": "ワークスペースの全体制限です。WebUI のチャット権限は別に設定します。\n\nツール全体のアクセス方針です。WebUI の会話ごとの権限は別途設定します。"
+        },
+        "tools_ssrf_whitelist": {
+          "label": "許可 IP",
+          "help": "許可する IP または CIDR を1行に1つ指定します。\n\n送信リクエストの保護から除外する IP/CIDR 範囲。1 行に 1 つ指定します。"
+        },
+        "tools_webui_allow_remote_package_install": {
+          "label": "リモートインストール",
+          "help": "パッケージとスキルのリモートインストールを許可します。ゲートウェイ端末で設定します。\n\nリモートの WebUI から追加パッケージやスキルをインストールできるようにします。この設定はゲートウェイを実行しているマシン上で変更する必要があります。"
+        },
+        "tools_cli_apps_install_timeout": {
+          "label": "インストール制限時間",
+          "help": "CLI アプリのインストールに待つ秒数の上限です。\n\nCLI アプリのインストール時間の上限です。"
+        },
+        "tools_cli_apps_run_timeout": {
+          "label": "実行の制限時間",
+          "help": "CLI コマンドの実行秒数の上限です。\n\nCLI アプリのコマンド実行時間の上限です。"
+        },
+        "tools_cli_apps_catalog_ttl_seconds": {
+          "label": "キャッシュ期間",
+          "help": "CLI アプリ一覧をキャッシュする秒数です。\n\nCLI アプリのカタログをキャッシュする期間です。"
+        },
+        "gateway_host": {
+          "label": "ゲートウェイアドレス",
+          "help": "ゲートウェイのアドレスです。WebUI の待ち受けは別に設定します。\n\nゲートウェイの待ち受けアドレスです。WebSocket と WebUI のアドレスは「チャンネル → WebSocket」で設定します。"
+        },
+        "gateway_port": {
+          "label": "ゲートウェイのポート",
+          "help": "ゲートウェイのポートです。起動引数が優先されます。\n\n保存するポート番号。コマンドライン引数が優先されます。"
+        },
+        "gateway_restart_mode": {
+          "label": "再起動モード",
+          "help": "再起動方法を選びます。「自動」は環境に合わせます。\n\nプロセスの再起動方法。自動モードではホスト環境に応じて選択します。"
+        },
+        "api_host": {
+          "label": "API アドレス",
+          "help": "ネットワーク公開前にキーを設定し、変更後は API を再起動します。\n\nlocalhost 以外のアドレスで待ち受けるには API キーが必要です。「システム」でキーを設定し、API サービスを再起動して変更を反映してください。"
+        },
+        "api_timeout": {
+          "label": "API 制限時間",
+          "help": "API 要求の最大秒数です。適用には再起動が必要です。\n\nリクエストの時間制限です。API サービスの再起動後に反映されます。"
+        },
+        "tools_image_generation_save_dir": {
+          "label": "保存先",
+          "help": "メディア内の相対パスです。既存の画像は移動しません。\n\nnanobot のメディアディレクトリ内の相対パス。既存の画像は移動しません。"
+        }
       },
       "groups": {
-        "chat": {"title": "WebUI 権限", "help": "本機のサービスへのアクセスとチャットの既定権限を設定します。\n\nローカルサービスへのアクセスとチャットの既定の権限。"},
-        "identity": {"title": "タイムゾーン", "help": "予約タスクの時間帯を選びます。"},
-        "memory": {"title": "記憶", "help": "メモリーの自動整理をオン・オフします。"},
-        "heartbeat": {"title": "定期チェックのスケジュール", "help": "タスクの定期確認を設定します。"},
-        "execution": {"title": "実行の制限", "help": "ツールの上限と要求の再試行を設定します。"},
-        "sessions": {"title": "会話", "help": "複数プラットフォーム間のチャット共有を設定します。"},
-        "tools": {"title": "組み込みツール", "help": "エージェントが使えるツールを選びます。"},
-        "shell": {"title": "シェルとサンドボックス", "help": "コマンドの制限時間、環境、アクセスルールを設定します。"},
-        "proxy": {"title": "共有プロキシ", "help": "プロキシを使う機能の共有アドレスを設定します。"},
-        "network": {"title": "ウェブ接続", "help": "ウェブリクエストのプロキシ使用と User-Agent を設定します。"},
-        "safety": {"title": "全体の権限", "help": "ワークスペース制限、ネットワーク例外、リモートインストールを設定します。\n\nワークスペース制限、プライベートネットワーク、リモートインストール。"},
-        "cli": {"title": "CLI 制限", "help": "インストール・実行の制限時間と一覧のキャッシュ期間を設定します。\n\nインストール、実行、カタログキャッシュの時間制限。"},
-        "gateway": {"title": "ゲートウェイ", "help": "配置と再起動の方法を設定します。"},
-        "api": {"title": "API 設定", "help": "待ち受けアドレスと要求の制限時間を設定します。"},
-        "storage": {"title": "画像の保存", "help": "生成した画像の保存先を選びます。"},
-        "maintenance": {"title": "メモリー整理", "help": ""},
-        "web": {"title": "ウェブアクセス", "help": ""},
-        "applications": {"title": "CLI アプリ", "help": ""}
+        "chat": {
+          "title": "WebUI 権限",
+          "help": "本機のサービスへのアクセスとチャットの既定権限を設定します。\n\nローカルサービスへのアクセスとチャットの既定の権限。"
+        },
+        "identity": {
+          "title": "タイムゾーン",
+          "help": "予約タスクの時間帯を選びます。"
+        },
+        "memory": {
+          "title": "記憶",
+          "help": "メモリーの自動整理をオン・オフします。"
+        },
+        "heartbeat": {
+          "title": "定期チェックのスケジュール",
+          "help": "タスクの定期確認を設定します。"
+        },
+        "execution": {
+          "title": "実行の制限",
+          "help": "ツールの上限と要求の再試行を設定します。"
+        },
+        "sessions": {
+          "title": "会話",
+          "help": "複数プラットフォーム間のチャット共有を設定します。"
+        },
+        "tools": {
+          "title": "組み込みツール",
+          "help": "エージェントが使えるツールを選びます。"
+        },
+        "shell": {
+          "title": "シェルとサンドボックス",
+          "help": "コマンドの制限時間、環境、アクセスルールを設定します。"
+        },
+        "proxy": {
+          "title": "共有プロキシ",
+          "help": "プロキシを使う機能の共有アドレスを設定します。"
+        },
+        "network": {
+          "title": "ウェブ接続",
+          "help": "ウェブリクエストのプロキシ使用と User-Agent を設定します。"
+        },
+        "safety": {
+          "title": "全体の権限",
+          "help": "ワークスペース制限、ネットワーク例外、リモートインストールを設定します。\n\nワークスペース制限、プライベートネットワーク、リモートインストール。"
+        },
+        "cli": {
+          "title": "CLI 制限",
+          "help": "インストール・実行の制限時間と一覧のキャッシュ期間を設定します。\n\nインストール、実行、カタログキャッシュの時間制限。"
+        },
+        "gateway": {
+          "title": "ゲートウェイ",
+          "help": "配置と再起動の方法を設定します。"
+        },
+        "api": {
+          "title": "API 設定",
+          "help": "待ち受けアドレスと要求の制限時間を設定します。"
+        },
+        "storage": {
+          "title": "画像の保存",
+          "help": "生成した画像の保存先を選びます。"
+        },
+        "maintenance": {
+          "title": "メモリー整理",
+          "help": ""
+        },
+        "web": {
+          "title": "ウェブアクセス",
+          "help": ""
+        },
+        "applications": {
+          "title": "CLI アプリ",
+          "help": ""
+        }
       },
-      "save": "変更を保存", "saving": "保存中…", "discard": "変更を破棄", "saved": "保存しました。",
-      "restart": "nanobot を再起動", "restartHelp": "再起動すると反映されます。コマンドライン引数や環境変数の設定が優先される場合があります。",
-      "search": "詳細設定を検索", "noResults": "一致する設定はありません。", "pending": "未保存の変更",
+      "save": "変更を保存",
+      "saving": "保存中…",
+      "discard": "変更を破棄",
+      "saved": "保存しました。",
+      "restart": "nanobot を再起動",
+      "restartHelp": "再起動すると反映されます。コマンドライン引数や環境変数の設定が優先される場合があります。",
+      "search": "詳細設定を検索",
+      "noResults": "一致する設定はありません。",
+      "pending": "未保存の変更",
       "idleCompaction": {
         "label": "未使用時の自動圧縮",
         "help": "未使用時間が上限に達するとコンテキストを自動圧縮し、次回以降のトークン使用量を減らします。",
@@ -560,9 +746,15 @@
         "minutes": "分",
         "numberError": "分数を0以上の整数で入力してください。"
       },
-      "numberError": "許可された範囲内の有効な数値を入力してください。", "activeModel": "現在のモデルを使用", "none": "なし",
-      "auto": "自動", "manual": "手動", "standard": "標準", "persistent": "継続",
-      "unavailable": "これらの設定を編集するにはゲートウェイを更新してください。", "advancedOptions": "詳細オプション"
+      "numberError": "許可された範囲内の有効な数値を入力してください。",
+      "activeModel": "現在のモデルを使用",
+      "none": "なし",
+      "auto": "自動",
+      "manual": "手動",
+      "standard": "標準",
+      "persistent": "継続",
+      "unavailable": "これらの設定を編集するにはゲートウェイを更新してください。",
+      "advancedOptions": "詳細オプション"
     },
     "backToChat": "チャットに戻る",
     "sidebar": {
@@ -1214,17 +1406,31 @@
       }
     },
     "api": {
-      "title": "API サーバー", "openaiCompatible": "OpenAI 互換 API", "description": "OpenAI 互換の API で接続します。",
-      "start": "API サーバーを起動", "starting": "起動中...", "stop": "停止", "stopping": "停止中...",
-      "access": "アクセス", "thisDevice": "このデバイス", "localNetwork": "ローカルネットワーク",
-      "localHelp": "この端末だけが接続できます。", "networkHelp": "LAN からのアクセスには API キーが必要です。\n\n他のデバイスも接続できるため API キーが必要です。",
-      "port": "ポート", "portHelp": "API サービスが使うローカルポートです。", "apiKey": "API キー", "apiKeyHelp": "キーを Bearer Token として送信します。",
-      "apiKeyRequired": "ネットワークに公開する前に必要です。", "apiKeyPlaceholder": "API キーを入力",
+      "title": "API サーバー",
+      "openaiCompatible": "OpenAI 互換 API",
+      "description": "OpenAI 互換の API で接続します。",
+      "start": "API サーバーを起動",
+      "starting": "起動中...",
+      "stop": "停止",
+      "stopping": "停止中...",
+      "access": "アクセス",
+      "thisDevice": "このデバイス",
+      "localNetwork": "ローカルネットワーク",
+      "localHelp": "この端末だけが接続できます。",
+      "networkHelp": "LAN からのアクセスには API キーが必要です。\n\n他のデバイスも接続できるため API キーが必要です。",
+      "port": "ポート",
+      "portHelp": "API サービスが使うローカルポートです。",
+      "apiKey": "API キー",
+      "apiKeyHelp": "キーを Bearer Token として送信します。",
+      "apiKeyRequired": "ネットワークに公開する前に必要です。",
+      "apiKeyPlaceholder": "API キーを入力",
       "autoInstall": "起動時に API サーバーに必要なパッケージを自動的にインストールします。"
     },
     "observability": {
-      "title": "実行の追跡", "configured": "nanobot がトレース認証情報を利用できます。",
-      "environment": "LANGFUSE_SECRET_KEY と LANGFUSE_PUBLIC_KEY を設定して nanobot を再起動してください。", "enable": "追跡を有効化"
+      "title": "実行の追跡",
+      "configured": "nanobot がトレース認証情報を利用できます。",
+      "environment": "LANGFUSE_SECRET_KEY と LANGFUSE_PUBLIC_KEY を設定して nanobot を再起動してください。",
+      "enable": "追跡を有効化"
     },
     "legal": {
       "thirdPartyBrands": "製品名、ロゴ、ブランドはそれぞれの所有者に帰属します。使用は識別のみを目的とし、承認を意味するものではありません。"
@@ -1750,7 +1956,8 @@
       "disabled": "一時停止中",
       "local": "トリガー待ち",
       "none": "次回実行なし"
-    }
+    },
+    "careerDescription": "関連する準備記録とタスクもワークベンチから削除されます。履歴書と求人の一覧にある資料は保持されます。"
   },
   "connection": {
     "idle": "待機中",
@@ -2637,6 +2844,43 @@
     "currentUse": "使用中",
     "viewOnlyHint": "版を閲覧しても、今回の準備に使う資料は変わりません。",
     "textSource": "貼り付けたテキスト",
-    "addedAt": "追加日時"
+    "addedAt": "追加日時",
+    "modelMaterials": "今回の参照資料を見る",
+    "privacyHint": "一般的な連絡先とローカルパスを非表示にし、今回の準備資料だけを含めています。以下の内容をご確認ください。",
+    "contextTruncated": "資料の一部を省略しました。不足する情報は対話で補足できます。",
+    "chatLoadError": "準備資料または対話を読み込めませんでした。更新して再試行してください。",
+    "chatFailure": "今回の対話は完了しませんでした。接続やモデル設定を確認して再度質問してください。",
+    "olderMessages": "以前のメッセージを読み込む",
+    "replyMaterials": "今回の資料：{{resume}} · v{{resumeVersion}} / {{job}} · v{{jobVersion}}",
+    "chatWelcome": "資料の準備ができました。経験を踏まえて、この求人に向けて何を優先すべきか質問できます。",
+    "chatInput": "就職準備アシスタントに質問",
+    "stop": "回答を停止",
+    "availabilityTitle": "今回の勤務条件",
+    "availabilitySource": "この準備を作成した際に入力した条件です。",
+    "availabilityDays": "週の勤務可能日数",
+    "availabilityMonths": "継続可能な実習期間",
+    "availabilityDate": "勤務開始可能日",
+    "availabilityLocations": "希望勤務地",
+    "daysValue": "週 {{count}} 日",
+    "monthsValue": "{{count}} か月",
+    "openResumeLibrary": "履歴書一覧を開く",
+    "openJobLibrary": "求人一覧を開く",
+    "resumeFacts": "履歴書の補足情報",
+    "jobFacts": "求人の補足情報",
+    "conditionMismatch": "履歴書と勤務条件が異なります",
+    "conditionMismatchHint": "今回入力した条件を使用します。履歴書をご確認ください。確認済みの内容は自動変更されません。",
+    "conditionComparison": "今回の入力：{{selected}}、履歴書：{{resume}}。",
+    "conditionEvidence": "履歴書の記載：「{{text}}」",
+    "education": "学歴",
+    "skills": "スキル",
+    "projects": "プロジェクト経験",
+    "interviewExperience": "ユーザーインタビュー経験",
+    "valueYes": "はい",
+    "valueNo": "いいえ",
+    "daysValue_one": "週 {{count}} 日",
+    "daysValue_other": "週 {{count}} 日",
+    "monthsValue_one": "{{count}} か月",
+    "monthsValue_other": "{{count}} か月",
+    "plansUnsupported": "このホストは計画の保存に対応していません。対話は続けられます。"
   }
 }

@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { lazy, Suspense, useId } from "react";
 import { ArrowRight, ArrowUpRight, BriefcaseBusiness, FileText, MessageSquareText, Send } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,9 @@ import { Textarea } from "@/components/ui/textarea";
 import type { CareerState, CareerThread, PersonalConditions } from "@/lib/career-types";
 import type { CareerPage } from "./CareerNavigation";
 import { CareerTarget } from "./CareerTarget";
+import { useClient } from "@/providers/ClientProvider";
+
+const CareerConversation = lazy(() => import("./CareerConversation").then((module) => ({ default: module.CareerConversation })));
 
 export function CareerHome({ data, thread, busy, onNavigate, onCreate, onBackToChat }: {
   data: CareerState; thread?: CareerThread; busy: boolean;
@@ -14,11 +17,17 @@ export function CareerHome({ data, thread, busy, onNavigate, onCreate, onBackToC
   onBackToChat: () => void;
 }) {
   const { t } = useTranslation();
+  const { webuiCapabilities } = useClient();
   const hintId = useId();
   const job = data.jobs.find((record) => record.id === thread?.job_version_id);
   const plans = new Set(data.plans.filter((plan) => plan.career_thread_id === thread?.id).map((plan) => plan.id));
   const tasks = data.tasks.filter((task) => plans.has(task.plan_id));
   const completed = tasks.filter((task) => task.status === "completed").length;
+  if (thread && data.chat_available[thread.id] && webuiCapabilities.includes("webui.career.chat.v1")) return <div className="mx-auto max-w-5xl space-y-4">
+    <CareerTarget data={data} thread={thread} busy={busy} onCreate={onCreate} onResumes={() => onNavigate("resumes")} onJobs={() => onNavigate("jobs")} />
+    <Suspense fallback={<p role="status">{t("career.loading")}</p>}><CareerConversation key={thread.id} reference={data.workspace_ref} thread={thread}
+      onResumes={() => onNavigate("resumes")} onJobs={() => onNavigate("jobs")} /></Suspense>
+  </div>;
   const summaries = [
     { page: "resumes", value: t("career.resumeCount", { count: data.resumes.length }), hint: t("career.confirmedCount", { count: data.resumes.filter((record) => record.status === "confirmed").length }) },
     { page: "jobs", value: t("career.jobCount", { count: new Set(data.jobs.map((record) => record.job_id)).size }), hint: t("career.confirmedCount", { count: data.jobs.filter((record) => record.status === "confirmed").length }) },

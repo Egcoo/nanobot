@@ -42,11 +42,31 @@ export interface CareerState {
   resumes: ResumeVersion[];
   jobs: JobVersion[];
   threads: CareerThread[];
+  deleted_thread_ids?: string[];
   plans: CareerPlan[];
   tasks: CareerTask[];
   chat_available: Record<string, boolean>;
 }
 export interface CareerSelection { workspaceRef: string; threadId: string }
+
+export interface CareerAnalysisSource {
+  id: string; turn_id: string | null; career_thread_id: string;
+  status: "queued" | "running" | "succeeded" | "failed" | "cancelled";
+  resume_name: string; resume_version: number; job_name: string; job_version: number; created_at: string;
+}
+export interface CareerConversationData {
+  thread_id: string;
+  truncated: boolean;
+  preview: {
+    resume: { id: string; name: string; version: number; text: string; profile: Record<string, unknown> };
+    job: { id: string; name: string; version: number; text: string; company: string; requirements: Record<string, unknown> };
+    conditions: PersonalConditions;
+    availability_conflicts: Array<{ field: string; available: number; required: number }>;
+    resume_condition_differences?: Array<{ field: "days_per_week" | "available_months"; selected: number; resume: number; evidence: string }>;
+    truncated: boolean;
+  };
+  analyses: CareerAnalysisSource[];
+}
 export interface ResumeWrite { id?: string; name: string; notes: string; text: string; profile: Record<string, unknown> }
 export interface JobWrite { id?: string; name: string; company: string | null; text: string; requirements: Record<string, unknown> }
 export type ResumeAction = "career.resume.create" | "career.resume.edit" | "career.resume.revise";

@@ -487,72 +487,258 @@
         "rangeError": "請輸入 1 到 {{max}} 之間的整數秒，或選擇「不限時」。"
       },
       "fields": {
-        "agents_defaults_timezone_mode": {"label": "系統時區", "help": "關閉後可手動指定時區"},
-        "agents_defaults_timezone": {"label": "時區", "help": "UTC 偏移按當前日期顯示"},
-        "agents_defaults_dream_enabled": {"label": "記憶整理", "help": "自動整理記憶；關閉後仍可用已有記憶\n\n自動整理對話中的有用資訊。關閉後停止整理，已有記憶仍可使用。"},
-        "gateway_heartbeat_enabled": {"label": "定期檢查", "help": "定期檢查 HEARTBEAT.md 任務\n\n定期檢查 HEARTBEAT.md 中的任務。"},
-        "gateway_heartbeat_interval_s": {"label": "檢查間隔", "help": "心跳任務的檢查間隔，單位秒"},
-        "agents_defaults_max_tool_iterations": {"label": "互動上限", "help": "每次回覆最多與工具互動多少輪\n\n每次回覆中，模型與工具最多可以互動多少輪。"},
-        "agents_defaults_max_concurrent_subagents": {"label": "併發上限", "help": "同時執行任務的子智慧體數量上限"},
-        "agents_defaults_max_tool_result_chars": {"label": "結果長度", "help": "每條工具結果傳給模型的字元上限\n\n限制每條工具結果傳入模型的長度，按字元計數。"},
-        "agents_defaults_provider_retry_mode": {"label": "持續重試", "help": "可恢復錯誤持續重試；關閉用標準策略\n\n遇到可恢復的請求錯誤時持續重試。關閉後使用標準重試策略。"},
-        "agents_defaults_tool_hint_max_length": {"label": "提示長度", "help": "工具執行提示的字元數上限\n\n工具執行時顯示的簡短提示最多包含多少個字元。"},
-        "tools_max_session_messages_per_minute": {"label": "訊息頻率", "help": "工具每分鐘向同一會話發訊息的上限"},
-        "agents_defaults_unified_session": {"label": "共享會話", "help": "同一使用者的跨平臺對話共用記錄\n\n讓同一使用者在不同聊天平臺的對話共用會話記錄。"},
-        "tools_exec_enable": {"label": "Shell 工具", "help": "允許智慧體執行 Shell 命令"},
-        "tools_file_enable": {"label": "檔案工具", "help": "允許使用內建檔案讀取和編輯工具"},
-        "tools_web_enable": {"label": "網頁訪問", "help": "允許搜尋網頁和讀取網頁內容"},
-        "tools_cli_apps_enable": {"label": "CLI 應用", "help": "允許安裝、管理和執行 CLI 應用"},
-        "tools_my_enable": {"label": "檢視配置", "help": "允許智慧體檢視自身配置"},
-        "tools_my_allow_set": {"label": "修改配置", "help": "允許智慧體修改自身配置"},
-        "tools_exec_timeout": {"label": "執行上限", "help": "Shell 命令的預設執行上限\n\n命令輸出或繼續等待都不會延長此上限。選擇「不限時」可取消執行時限。"},
-        "tools_exec_path_prepend": {"label": "優先目錄", "help": "優先查詢命令的目錄\n\n新增到 PATH 開頭。多個目錄在 Windows 上用分號分隔，在 Linux 和 macOS 上用冒號分隔。"},
-        "tools_exec_path_append": {"label": "追加目錄", "help": "最後查詢命令的目錄\n\n新增到 PATH 末尾。多個目錄在 Windows 上用分號分隔，在 Linux 和 macOS 上用冒號分隔。"},
-        "tools_exec_sandbox": {"label": "命令沙箱", "help": "隔離命令程序，需系統支援\n\nLinux 使用 bwrap，macOS 使用 Seatbelt。工作區路徑限制本身不提供程序隔離。"},
-        "tools_exec_sandbox_ro_binds": {"label": "只讀路徑", "help": "額外只讀路徑，每行一項"},
-        "tools_exec_sandbox_rw_binds": {"label": "可寫路徑", "help": "額外可寫路徑，每行一項"},
-        "tools_exec_allowed_env_keys": {"label": "環境變數", "help": "額外傳給命令的變數名，每行一個\n\n除必需變數外，還要從主機傳遞給命令的環境變數名稱，每行一個。"},
-        "tools_exec_allow_patterns": {"label": "允許命令", "help": "只允許完整匹配規則的命令\n\n每行一個正規表示式。填寫後，只允許每段命令都完整匹配規則的命令執行，且優先於內建和自定義拒絕規則；工作區和網路限制仍生效。"},
-        "tools_exec_deny_patterns": {"label": "禁止命令", "help": "阻止匹配規則的命令\n\n每行一個正規表示式，與內建拒絕規則一同檢查。完整匹配允許規則的命令會跳過這些檢查。"},
-        "network_proxy": {"label": "共用代理", "help": "啟用「使用代理」的功能共用此位址。127.0.0.1 指執行 nanobot 的裝置。"},
-        "tools_web_use_proxy": {"label": "使用代理", "help": "網頁搜尋與讀取使用共用代理。"},
-        "tools_web_user_agent": {"label": "User-Agent", "help": "網頁請求標識，留空使用預設值\n\n網頁請求使用的 User-Agent 標識，留空使用預設值。"},
-        "tools_restrict_to_workspace": {"label": "目錄限制", "help": "全域性目錄限制，WebUI 許可權另設\n\n設定全域性工作區訪問限制；WebUI 中每個對話的許可權單獨設定。"},
-        "tools_ssrf_whitelist": {"label": "允許 IP", "help": "允許訪問的 IP 或 CIDR，每行一項\n\n允許網頁等出站請求訪問這些受限地址。每行填寫一個 IP 地址或 CIDR 網段。"},
-        "tools_webui_allow_remote_package_install": {"label": "遠端安裝", "help": "包和技能可遠端安裝，僅閘道器裝置可設\n\n允許從其他裝置上的 WebUI 安裝可選軟體包和技能。此開關只能在執行閘道器的裝置上修改。"},
-        "tools_cli_apps_install_timeout": {"label": "安裝超時", "help": "CLI 應用安裝的最長等待秒數"},
-        "tools_cli_apps_run_timeout": {"label": "執行超時", "help": "CLI 命令執行的最長秒數"},
-        "tools_cli_apps_catalog_ttl_seconds": {"label": "快取時長", "help": "CLI 應用列表的快取有效秒數"},
-        "gateway_host": {"label": "閘道器地址", "help": "閘道器地址，WebUI 監聽地址另設\n\n閘道器使用的地址。WebUI 的監聽地址需在聊天平臺的 WebSocket 設定中單獨配置。"},
-        "gateway_port": {"label": "閘道連接埠", "help": "閘道器埠，啟動引數優先\n\n閘道器使用的埠。啟動時指定的命令列引數優先於此設定。"},
-        "gateway_restart_mode": {"label": "重新啟動方式", "help": "選擇重啟方式，自動按環境決定\n\n選擇閘道器的重啟方式。“自動”會根據執行環境選擇。"},
-        "api_host": {"label": "API 地址", "help": "對外開放須設金鑰；修改後重啟 API\n\n允許其他裝置連線前，請先在“系統”中設定 API 金鑰。修改後需重啟 API 服務。"},
-        "api_timeout": {"label": "API 超時", "help": "API 最長等待秒數，重啟服務生效\n\n每次 API 請求最長等待多久。修改後需重啟 API 服務。"},
-        "tools_image_generation_save_dir": {"label": "儲存目錄", "help": "媒體目錄內相對路徑，不遷移已有圖片\n\nnanobot 媒體目錄內的子目錄。請使用相對路徑，已有圖片不會遷移。"}
+        "agents_defaults_timezone_mode": {
+          "label": "系統時區",
+          "help": "關閉後可手動指定時區"
+        },
+        "agents_defaults_timezone": {
+          "label": "時區",
+          "help": "UTC 偏移按當前日期顯示"
+        },
+        "agents_defaults_dream_enabled": {
+          "label": "記憶整理",
+          "help": "自動整理記憶；關閉後仍可用已有記憶\n\n自動整理對話中的有用資訊。關閉後停止整理，已有記憶仍可使用。"
+        },
+        "gateway_heartbeat_enabled": {
+          "label": "定期檢查",
+          "help": "定期檢查 HEARTBEAT.md 任務\n\n定期檢查 HEARTBEAT.md 中的任務。"
+        },
+        "gateway_heartbeat_interval_s": {
+          "label": "檢查間隔",
+          "help": "心跳任務的檢查間隔，單位秒"
+        },
+        "agents_defaults_max_tool_iterations": {
+          "label": "互動上限",
+          "help": "每次回覆最多與工具互動多少輪\n\n每次回覆中，模型與工具最多可以互動多少輪。"
+        },
+        "agents_defaults_max_concurrent_subagents": {
+          "label": "併發上限",
+          "help": "同時執行任務的子智慧體數量上限"
+        },
+        "agents_defaults_max_tool_result_chars": {
+          "label": "結果長度",
+          "help": "每條工具結果傳給模型的字元上限\n\n限制每條工具結果傳入模型的長度，按字元計數。"
+        },
+        "agents_defaults_provider_retry_mode": {
+          "label": "持續重試",
+          "help": "可恢復錯誤持續重試；關閉用標準策略\n\n遇到可恢復的請求錯誤時持續重試。關閉後使用標準重試策略。"
+        },
+        "agents_defaults_tool_hint_max_length": {
+          "label": "提示長度",
+          "help": "工具執行提示的字元數上限\n\n工具執行時顯示的簡短提示最多包含多少個字元。"
+        },
+        "tools_max_session_messages_per_minute": {
+          "label": "訊息頻率",
+          "help": "工具每分鐘向同一會話發訊息的上限"
+        },
+        "agents_defaults_unified_session": {
+          "label": "共享會話",
+          "help": "同一使用者的跨平臺對話共用記錄\n\n讓同一使用者在不同聊天平臺的對話共用會話記錄。"
+        },
+        "tools_exec_enable": {
+          "label": "Shell 工具",
+          "help": "允許智慧體執行 Shell 命令"
+        },
+        "tools_file_enable": {
+          "label": "檔案工具",
+          "help": "允許使用內建檔案讀取和編輯工具"
+        },
+        "tools_web_enable": {
+          "label": "網頁訪問",
+          "help": "允許搜尋網頁和讀取網頁內容"
+        },
+        "tools_cli_apps_enable": {
+          "label": "CLI 應用",
+          "help": "允許安裝、管理和執行 CLI 應用"
+        },
+        "tools_my_enable": {
+          "label": "檢視配置",
+          "help": "允許智慧體檢視自身配置"
+        },
+        "tools_my_allow_set": {
+          "label": "修改配置",
+          "help": "允許智慧體修改自身配置"
+        },
+        "tools_exec_timeout": {
+          "label": "執行上限",
+          "help": "Shell 命令的預設執行上限\n\n命令輸出或繼續等待都不會延長此上限。選擇「不限時」可取消執行時限。"
+        },
+        "tools_exec_path_prepend": {
+          "label": "優先目錄",
+          "help": "優先查詢命令的目錄\n\n新增到 PATH 開頭。多個目錄在 Windows 上用分號分隔，在 Linux 和 macOS 上用冒號分隔。"
+        },
+        "tools_exec_path_append": {
+          "label": "追加目錄",
+          "help": "最後查詢命令的目錄\n\n新增到 PATH 末尾。多個目錄在 Windows 上用分號分隔，在 Linux 和 macOS 上用冒號分隔。"
+        },
+        "tools_exec_sandbox": {
+          "label": "命令沙箱",
+          "help": "隔離命令程序，需系統支援\n\nLinux 使用 bwrap，macOS 使用 Seatbelt。工作區路徑限制本身不提供程序隔離。"
+        },
+        "tools_exec_sandbox_ro_binds": {
+          "label": "只讀路徑",
+          "help": "額外只讀路徑，每行一項"
+        },
+        "tools_exec_sandbox_rw_binds": {
+          "label": "可寫路徑",
+          "help": "額外可寫路徑，每行一項"
+        },
+        "tools_exec_allowed_env_keys": {
+          "label": "環境變數",
+          "help": "額外傳給命令的變數名，每行一個\n\n除必需變數外，還要從主機傳遞給命令的環境變數名稱，每行一個。"
+        },
+        "tools_exec_allow_patterns": {
+          "label": "允許命令",
+          "help": "只允許完整匹配規則的命令\n\n每行一個正規表示式。填寫後，只允許每段命令都完整匹配規則的命令執行，且優先於內建和自定義拒絕規則；工作區和網路限制仍生效。"
+        },
+        "tools_exec_deny_patterns": {
+          "label": "禁止命令",
+          "help": "阻止匹配規則的命令\n\n每行一個正規表示式，與內建拒絕規則一同檢查。完整匹配允許規則的命令會跳過這些檢查。"
+        },
+        "network_proxy": {
+          "label": "共用代理",
+          "help": "啟用「使用代理」的功能共用此位址。127.0.0.1 指執行 nanobot 的裝置。"
+        },
+        "tools_web_use_proxy": {
+          "label": "使用代理",
+          "help": "網頁搜尋與讀取使用共用代理。"
+        },
+        "tools_web_user_agent": {
+          "label": "User-Agent",
+          "help": "網頁請求標識，留空使用預設值\n\n網頁請求使用的 User-Agent 標識，留空使用預設值。"
+        },
+        "tools_restrict_to_workspace": {
+          "label": "目錄限制",
+          "help": "全域性目錄限制，WebUI 許可權另設\n\n設定全域性工作區訪問限制；WebUI 中每個對話的許可權單獨設定。"
+        },
+        "tools_ssrf_whitelist": {
+          "label": "允許 IP",
+          "help": "允許訪問的 IP 或 CIDR，每行一項\n\n允許網頁等出站請求訪問這些受限地址。每行填寫一個 IP 地址或 CIDR 網段。"
+        },
+        "tools_webui_allow_remote_package_install": {
+          "label": "遠端安裝",
+          "help": "包和技能可遠端安裝，僅閘道器裝置可設\n\n允許從其他裝置上的 WebUI 安裝可選軟體包和技能。此開關只能在執行閘道器的裝置上修改。"
+        },
+        "tools_cli_apps_install_timeout": {
+          "label": "安裝超時",
+          "help": "CLI 應用安裝的最長等待秒數"
+        },
+        "tools_cli_apps_run_timeout": {
+          "label": "執行超時",
+          "help": "CLI 命令執行的最長秒數"
+        },
+        "tools_cli_apps_catalog_ttl_seconds": {
+          "label": "快取時長",
+          "help": "CLI 應用列表的快取有效秒數"
+        },
+        "gateway_host": {
+          "label": "閘道器地址",
+          "help": "閘道器地址，WebUI 監聽地址另設\n\n閘道器使用的地址。WebUI 的監聽地址需在聊天平臺的 WebSocket 設定中單獨配置。"
+        },
+        "gateway_port": {
+          "label": "閘道連接埠",
+          "help": "閘道器埠，啟動引數優先\n\n閘道器使用的埠。啟動時指定的命令列引數優先於此設定。"
+        },
+        "gateway_restart_mode": {
+          "label": "重新啟動方式",
+          "help": "選擇重啟方式，自動按環境決定\n\n選擇閘道器的重啟方式。“自動”會根據執行環境選擇。"
+        },
+        "api_host": {
+          "label": "API 地址",
+          "help": "對外開放須設金鑰；修改後重啟 API\n\n允許其他裝置連線前，請先在“系統”中設定 API 金鑰。修改後需重啟 API 服務。"
+        },
+        "api_timeout": {
+          "label": "API 超時",
+          "help": "API 最長等待秒數，重啟服務生效\n\n每次 API 請求最長等待多久。修改後需重啟 API 服務。"
+        },
+        "tools_image_generation_save_dir": {
+          "label": "儲存目錄",
+          "help": "媒體目錄內相對路徑，不遷移已有圖片\n\nnanobot 媒體目錄內的子目錄。請使用相對路徑，已有圖片不會遷移。"
+        }
       },
       "groups": {
-        "chat": {"title": "WebUI 許可權", "help": "設定對話的本機服務訪問和預設許可權\n\nWebUI 會話的本地服務訪問和預設許可權。"},
-        "identity": {"title": "時區", "help": "選擇計劃任務使用的時區"},
-        "memory": {"title": "記憶", "help": "開啟或關閉自動記憶整理"},
-        "heartbeat": {"title": "定期檢查排程", "help": "設定定期任務檢查"},
-        "execution": {"title": "執行限制", "help": "設定工具上限和請求重試方式"},
-        "sessions": {"title": "對話", "help": "設定跨平臺對話共享"},
-        "tools": {"title": "內建工具", "help": "選擇智慧體可以使用的工具"},
-        "shell": {"title": "Shell 與沙箱", "help": "設定命令超時、環境和訪問規則"},
-        "proxy": {"title": "共用代理", "help": "為使用代理的功能設定共用位址。"},
-        "network": {"title": "網頁連線", "help": "設定網頁請求的代理開關與 User-Agent。"},
-        "safety": {"title": "全域性許可權", "help": "設定目錄限制、網路例外和遠端安裝\n\n設定工作區訪問限制、網路訪問例外和遠端安裝許可權。"},
-        "cli": {"title": "CLI 限制", "help": "設定安裝、執行超時和列表快取\n\n設定安裝和執行超時，以及應用列表的快取時長。"},
-        "gateway": {"title": "閘道器", "help": "設定部署和重啟方式"},
-        "api": {"title": "API 設定", "help": "設定監聽地址和請求超時"},
-        "storage": {"title": "圖片儲存", "help": "選擇生成圖片的儲存位置"},
-        "maintenance": {"title": "記憶整理", "help": ""},
-        "web": {"title": "網路存取", "help": ""},
-        "applications": {"title": "CLI 應用", "help": ""}
+        "chat": {
+          "title": "WebUI 許可權",
+          "help": "設定對話的本機服務訪問和預設許可權\n\nWebUI 會話的本地服務訪問和預設許可權。"
+        },
+        "identity": {
+          "title": "時區",
+          "help": "選擇計劃任務使用的時區"
+        },
+        "memory": {
+          "title": "記憶",
+          "help": "開啟或關閉自動記憶整理"
+        },
+        "heartbeat": {
+          "title": "定期檢查排程",
+          "help": "設定定期任務檢查"
+        },
+        "execution": {
+          "title": "執行限制",
+          "help": "設定工具上限和請求重試方式"
+        },
+        "sessions": {
+          "title": "對話",
+          "help": "設定跨平臺對話共享"
+        },
+        "tools": {
+          "title": "內建工具",
+          "help": "選擇智慧體可以使用的工具"
+        },
+        "shell": {
+          "title": "Shell 與沙箱",
+          "help": "設定命令超時、環境和訪問規則"
+        },
+        "proxy": {
+          "title": "共用代理",
+          "help": "為使用代理的功能設定共用位址。"
+        },
+        "network": {
+          "title": "網頁連線",
+          "help": "設定網頁請求的代理開關與 User-Agent。"
+        },
+        "safety": {
+          "title": "全域性許可權",
+          "help": "設定目錄限制、網路例外和遠端安裝\n\n設定工作區訪問限制、網路訪問例外和遠端安裝許可權。"
+        },
+        "cli": {
+          "title": "CLI 限制",
+          "help": "設定安裝、執行超時和列表快取\n\n設定安裝和執行超時，以及應用列表的快取時長。"
+        },
+        "gateway": {
+          "title": "閘道器",
+          "help": "設定部署和重啟方式"
+        },
+        "api": {
+          "title": "API 設定",
+          "help": "設定監聽地址和請求超時"
+        },
+        "storage": {
+          "title": "圖片儲存",
+          "help": "選擇生成圖片的儲存位置"
+        },
+        "maintenance": {
+          "title": "記憶整理",
+          "help": ""
+        },
+        "web": {
+          "title": "網路存取",
+          "help": ""
+        },
+        "applications": {
+          "title": "CLI 應用",
+          "help": ""
+        }
       },
-      "save": "儲存變更", "saving": "儲存中…", "discard": "捨棄變更", "saved": "已儲存。",
-      "restart": "重新啟動 nanobot", "restartHelp": "重新啟動後生效；命令列與環境變數的設定可能優先。",
-      "search": "搜尋進階設定", "noResults": "找不到相符設定。", "pending": "尚未儲存的變更",
+      "save": "儲存變更",
+      "saving": "儲存中…",
+      "discard": "捨棄變更",
+      "saved": "已儲存。",
+      "restart": "重新啟動 nanobot",
+      "restartHelp": "重新啟動後生效；命令列與環境變數的設定可能優先。",
+      "search": "搜尋進階設定",
+      "noResults": "找不到相符設定。",
+      "pending": "尚未儲存的變更",
       "idleCompaction": {
         "label": "閒置自動壓縮",
         "help": "閒置逾時後壓縮上下文，減少後續用量。",
@@ -560,9 +746,15 @@
         "minutes": "分鐘",
         "numberError": "請輸入非負整數分鐘數。"
       },
-      "numberError": "請輸入允許範圍內的有效數字。", "activeModel": "使用目前模型", "none": "無",
-      "auto": "自動", "manual": "手動", "standard": "標準", "persistent": "持續",
-      "unavailable": "更新閘道後可編輯這些設定。", "advancedOptions": "進階選項"
+      "numberError": "請輸入允許範圍內的有效數字。",
+      "activeModel": "使用目前模型",
+      "none": "無",
+      "auto": "自動",
+      "manual": "手動",
+      "standard": "標準",
+      "persistent": "持續",
+      "unavailable": "更新閘道後可編輯這些設定。",
+      "advancedOptions": "進階選項"
     },
     "backToChat": "返回聊天",
     "sidebar": {
@@ -1214,17 +1406,31 @@
       }
     },
     "api": {
-      "title": "API 伺服器", "openaiCompatible": "OpenAI 相容 API", "description": "透過相容 OpenAI 的 API 連線",
-      "start": "啟動 API 伺服器", "starting": "正在啟動…", "stop": "停止", "stopping": "正在停止…",
-      "access": "存取範圍", "thisDevice": "僅此裝置", "localNetwork": "區域網路",
-      "localHelp": "僅當前裝置可連線", "networkHelp": "區域網可連線，須設定 API 金鑰\n\n區域網內其他裝置可以連線，因此必須設定 API 金鑰。",
-      "port": "連接埠", "portHelp": "API 服務使用的本地埠", "apiKey": "API 金鑰", "apiKeyHelp": "透過 Bearer Token 傳送金鑰",
-      "apiKeyRequired": "向區域網路開放 API 前必須設定金鑰。", "apiKeyPlaceholder": "輸入 API 金鑰",
+      "title": "API 伺服器",
+      "openaiCompatible": "OpenAI 相容 API",
+      "description": "透過相容 OpenAI 的 API 連線",
+      "start": "啟動 API 伺服器",
+      "starting": "正在啟動…",
+      "stop": "停止",
+      "stopping": "正在停止…",
+      "access": "存取範圍",
+      "thisDevice": "僅此裝置",
+      "localNetwork": "區域網路",
+      "localHelp": "僅當前裝置可連線",
+      "networkHelp": "區域網可連線，須設定 API 金鑰\n\n區域網內其他裝置可以連線，因此必須設定 API 金鑰。",
+      "port": "連接埠",
+      "portHelp": "API 服務使用的本地埠",
+      "apiKey": "API 金鑰",
+      "apiKeyHelp": "透過 Bearer Token 傳送金鑰",
+      "apiKeyRequired": "向區域網路開放 API 前必須設定金鑰。",
+      "apiKeyPlaceholder": "輸入 API 金鑰",
       "autoInstall": "啟動時會自動安裝 API 服務所需的套件。"
     },
     "observability": {
-      "title": "執行追蹤", "configured": "nanobot 已偵測到追蹤憑證。",
-      "environment": "設定 LANGFUSE_SECRET_KEY 和 LANGFUSE_PUBLIC_KEY 後重新啟動 nanobot。", "enable": "啟用追蹤"
+      "title": "執行追蹤",
+      "configured": "nanobot 已偵測到追蹤憑證。",
+      "environment": "設定 LANGFUSE_SECRET_KEY 和 LANGFUSE_PUBLIC_KEY 後重新啟動 nanobot。",
+      "enable": "啟用追蹤"
     },
     "legal": {
       "thirdPartyBrands": "產品名稱、Logo 與品牌均為各自擁有者的財產。僅供識別之用，不代表任何形式的背書。"
@@ -1750,7 +1956,8 @@
       "disabled": "已暫停",
       "local": "等待觸發",
       "none": "沒有下次執行"
-    }
+    },
+    "careerDescription": "對應準備記錄與關聯清單會一併從工作台移除，履歷與職缺庫中的資料保留。"
   },
   "connection": {
     "idle": "閒置",
@@ -2637,6 +2844,43 @@
     "currentUse": "目前使用",
     "viewOnlyHint": "查看版本不會更換本次準備使用的資料。",
     "textSource": "文字輸入",
-    "addedAt": "新增時間"
+    "addedAt": "新增時間",
+    "modelMaterials": "查看本次參考資料",
+    "privacyHint": "已隱藏常見聯絡資訊和本機路徑，僅帶入目前準備資料。請核對下方實際內容。",
+    "contextTruncated": "資料較長，部分內容已截取；可在對話中補充。",
+    "chatLoadError": "無法確認準備資料或載入對話，請重新整理後再試。",
+    "chatFailure": "本次對話未完成，請檢查連線或模型設定後重新提問。",
+    "olderMessages": "載入更早的訊息",
+    "replyMaterials": "本輪使用：{{resume}} · v{{resumeVersion}} / {{job}} · v{{jobVersion}}",
+    "chatWelcome": "資料已就緒。可以問：根據我的經歷，這個職缺應該優先準備什麼？",
+    "chatInput": "向求職助手提問",
+    "stop": "停止回覆",
+    "availabilityTitle": "本次到職條件",
+    "availabilitySource": "來自本次準備時填寫的條件。",
+    "availabilityDays": "每週可到職",
+    "availabilityMonths": "可連續實習",
+    "availabilityDate": "最早到職日期",
+    "availabilityLocations": "意向地點",
+    "daysValue": "每週 {{count}} 天",
+    "monthsValue": "{{count}} 個月",
+    "openResumeLibrary": "前往履歷庫",
+    "openJobLibrary": "前往職缺庫",
+    "resumeFacts": "履歷補充資訊",
+    "jobFacts": "職缺補充資訊",
+    "conditionMismatch": "到職資訊有差異",
+    "conditionMismatchHint": "本次使用填寫的條件，請核對履歷；確認內容不會自動修改。",
+    "conditionComparison": "本次填寫：{{selected}}；履歷原文：{{resume}}。",
+    "conditionEvidence": "履歷原文：「{{text}}」",
+    "education": "教育經歷",
+    "skills": "技能",
+    "projects": "專案經歷",
+    "interviewExperience": "使用者訪談經歷",
+    "valueYes": "是",
+    "valueNo": "否",
+    "daysValue_one": "每週 {{count}} 天",
+    "daysValue_other": "每週 {{count}} 天",
+    "monthsValue_one": "{{count}} 個月",
+    "monthsValue_other": "{{count}} 個月",
+    "plansUnsupported": "目前主機不支援計畫儲存，可繼續對話。"
   }
 }

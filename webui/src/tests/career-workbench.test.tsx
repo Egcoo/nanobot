@@ -5,8 +5,10 @@ import { CareerWorkbench } from "@/components/career/CareerWorkbench";
 import * as api from "@/lib/career-api";
 import type { CareerSelection, CareerState, ResumeVersion } from "@/lib/career-types";
 
+type ObserveSessionUpdate = (handler: (chatId: string, scope?: string) => void) => () => void;
+
 const context = vi.hoisted(() => ({
-  client: { requestMutation: vi.fn() }, token: "engineering-test-token", getToken: () => "engineering-test-token",
+  client: { requestMutation: vi.fn(), onSessionUpdate: vi.fn<ObserveSessionUpdate>(() => () => {}) }, token: "engineering-test-token", getToken: () => "engineering-test-token",
   webuiCapabilities: ["webui.core.v1", "webui.career.v1"],
 }));
 vi.mock("@/providers/ClientProvider", () => ({ useClient: () => context }));
@@ -30,7 +32,7 @@ function Harness({ initialSelection = { workspaceRef: "", threadId: "" } }: { in
 
 beforeEach(() => {
   vi.resetAllMocks();
-  context.client = { requestMutation: vi.fn() };
+  context.client = { requestMutation: vi.fn(), onSessionUpdate: vi.fn<ObserveSessionUpdate>(() => () => {}) };
   context.webuiCapabilities = ["webui.core.v1", "webui.career.v1"];
   vi.mocked(api.fetchCareerWorkspaces).mockResolvedValue([
     { ref: "workspace-a", name: "Project A", is_default: true },
@@ -39,6 +41,29 @@ beforeEach(() => {
   vi.mocked(api.fetchCareerState).mockImplementation(async (_token, ref) => empty(ref));
 });
 afterEach(cleanup);
+
+it("clears a deleted preparation after the host update while retaining its resume and job", async () => {
+  const state = empty();
+  state.resumes = [resume("r1", "confirmed")];
+  state.jobs = [{ id: "j1", job_id: "job", version: 1, parent_version_id: null, name: "Job A", company: null,
+    text: "Job text", requirements: {}, source: "text", created_at: "2026-10-30T08:00:00+00:00", status: "confirmed" }];
+  state.threads = [{ id: "thread1", workspace_id: state.workspace_id, session_key: "websocket:career-one",
+    resume_version_id: "r1", job_version_id: "j1", conditions: { days_per_week: 3, available_months: null, locations: [] } }];
+  vi.mocked(api.fetchCareerState).mockResolvedValue(state);
+  render(<Harness initialSelection={{ workspaceRef: "workspace-a", threadId: "thread1" }} />);
+  await screen.findByRole("region", { name: "Current preparation" });
+  await waitFor(() => expect(screen.getByRole("region", { name: "Current preparation" })).toHaveTextContent("Resume r1 · v1 → Job A · v1"));
+  vi.mocked(api.fetchCareerState).mockResolvedValue({ ...state, threads: [], deleted_thread_ids: ["thread1"] });
+  const update = context.client.onSessionUpdate.mock.calls.at(-1)?.[0];
+  if (!update) throw new Error("Missing session update subscription");
+  await act(async () => update("career-one", "metadata"));
+  await screen.findByText("No preparation selected.");
+  expect(screen.getByRole("region", { name: "Preparation records" })).toHaveTextContent("No preparation records yet.");
+  fireEvent.click(navigation("Resumes"));
+  expect(await screen.findByRole("button", { name: /Resume r1/ })).toBeVisible();
+  fireEvent.click(navigation("Jobs"));
+  expect(await screen.findByRole("button", { name: /Job A/ })).toBeVisible();
+});
 
 it("guides an empty workspace into real text entry while keeping the future conversation unavailable", async () => {
   render(<Harness />);
@@ -174,7 +199,7 @@ it("discards the previous host's data when a different client takes ownership", 
   const view = render(<CareerWorkbench {...props} />);
   await screen.findByText("No preparation selected."); fireEvent.click(navigation("Resumes"));
   expect(screen.getByRole("button", { name: /First host resume/ })).toBeVisible();
-  context.client = { requestMutation: vi.fn() };
+  context.client = { requestMutation: vi.fn(), onSessionUpdate: vi.fn<ObserveSessionUpdate>(() => () => {}) };
   vi.mocked(api.fetchCareerState).mockResolvedValue(empty());
   view.rerender(<CareerWorkbench {...props} />);
   expect(screen.queryByRole("button", { name: /First host resume/ })).not.toBeInTheDocument();
