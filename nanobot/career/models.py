@@ -83,12 +83,14 @@ class CareerThread(_CareerModel):
     job_version_id: str
     conditions: PersonalConditions
     created_at: datetime
+    deleted_at: datetime | None = None
 
 
 class AnalysisSnapshot(_CareerModel):
     resume: ResumeVersion
     job: JobVersion
     conditions: PersonalConditions
+    turn_id: ShortText | None = None
 
 
 AnalysisStatus = Literal["queued", "running", "succeeded", "failed", "cancelled"]

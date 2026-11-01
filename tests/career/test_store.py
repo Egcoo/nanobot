@@ -52,3 +52,26 @@ def test_future_schema_is_rejected_without_reinitializing_records(tmp_path: Path
 def test_runtime_storage_inside_workspace_is_rejected(tmp_path: Path) -> None:
     with pytest.raises(RuntimeError, match="outside the agent workspace"):
         CareerStore(tmp_path / "workspace", data_dir=tmp_path / "workspace" / "runtime")
+
+
+def test_v1_database_upgrade_preserves_materials_bindings_and_analysis(tmp_path: Path) -> None:
+    store = CareerStore(tmp_path / "workspace", data_dir=tmp_path / "data")
+    service = CareerService(store)
+    resume = service.create_resume(name="旧版简历", text="原有项目内容")
+    job = service.create_job(name="旧版岗位", text="原有岗位要求")
+    service.confirm_resume(resume.id)
+    service.confirm_job(job.id)
+    thread = service.create_thread(session_key="career:migration", resume_version_id=resume.id, job_version_id=job.id)
+    analysis = service.create_analysis(thread.id, turn_id="existing-turn")
+    # Reproduce the previous on-disk schema, which had no deletion marker.
+    with closing(sqlite3.connect(store.path)) as db, db:
+        db.execute("ALTER TABLE career_threads DROP COLUMN deleted_at")
+        db.execute("PRAGMA user_version = 1")
+    restored = CareerService(CareerStore(tmp_path / "workspace", data_dir=tmp_path / "data"))
+    assert restored.get_thread(thread.id) == thread
+    assert restored.get_resume(resume.id).text == resume.text
+    assert restored.get_job(job.id).text == job.text
+    assert restored.get_analysis(analysis.id) == analysis
+    with closing(sqlite3.connect(store.path)) as db:
+        assert db.execute("PRAGMA user_version").fetchone()[0] == 2
+        assert db.execute("PRAGMA integrity_check").fetchone()[0] == "ok"

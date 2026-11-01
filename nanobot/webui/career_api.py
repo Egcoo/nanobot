@@ -6,6 +6,7 @@ import asyncio
 import hashlib
 import json
 import os
+from collections.abc import Awaitable, Callable
 from pathlib import Path
 from typing import Annotated, cast
 
@@ -14,6 +15,7 @@ from pydantic import BaseModel, ConfigDict, Field, JsonValue
 from nanobot.career.models import (
     CareerConflictError,
     CareerNotFoundError,
+    CareerThread,
     PersonalConditions,
     ShortText,
 )
@@ -98,6 +100,7 @@ class CareerAPI:
         self.sessions = sessions
         self.workspaces = workspaces
         self.data_dir = data_dir
+        self._lifecycle_lock = asyncio.Lock()
 
     def _scopes(self) -> dict[str, WorkspaceScope]:
         default = self.workspaces.default_scope()
@@ -136,8 +139,54 @@ class CareerAPI:
             for ref, scope in self._scopes().items()
         ]}
 
-    def state(self, reference: str) -> dict[str, object]:
+    def session_binding(
+        self, chat_id: str, scope: WorkspaceScope,
+    ) -> tuple[CareerService, CareerThread, str] | None:
+        if self.sessions is None:
+            return None
+        session_key = f"websocket:{chat_id}"
+        stored = self.sessions.read_session_metadata(session_key)
+        metadata: dict[str, object] = stored["metadata"] if stored is not None else {}
+        if "career_thread_id" not in metadata:
+            if chat_id.startswith("career-"):
+                raise CareerConflictError("career_session_conflict")
+            return None
+        thread_id = metadata["career_thread_id"]
+        if not isinstance(thread_id, str) or not thread_id:
+            raise CareerConflictError("career_session_conflict")
+        reference = _scope_ref(scope)
+        service, _ = self._resolve(reference)
+        thread = service.get_thread(thread_id)
+        if thread.session_key != session_key or not _matches_session(metadata, thread.id, scope):
+            raise CareerConflictError("career_session_conflict")
+        return service, thread, reference
+
+    def bound_thread(self, reference: str, thread_id: str) -> tuple[CareerService, CareerThread]:
         service, scope = self._resolve(reference)
+        thread = service.get_thread(thread_id)
+        chat_id = thread.session_key.removeprefix("websocket:")
+        binding = self.session_binding(chat_id, scope)
+        if binding is None or binding[1].id != thread.id:
+            raise CareerConflictError("career_session_conflict")
+        return service, thread
+
+    def _retire_missing_threads(self, service: CareerService) -> None:
+        assert self.sessions is not None
+        # Read every session before writing. A storage error or a mismatched
+        # binding is not evidence of deletion. Serialize this with chat creation.
+        missing = [thread.id for thread in service.list_threads()
+                   if thread.session_key.startswith("websocket:career-")
+                   and self.sessions.read_session_metadata(thread.session_key) is None]
+        if missing:
+            service.retire_threads(missing)
+
+    async def state(self, reference: str) -> dict[str, object]:
+        async with self._lifecycle_lock:
+            return await asyncio.to_thread(self._state, reference)
+
+    def _state(self, reference: str) -> dict[str, object]:
+        service, scope = self._resolve(reference)
+        self._retire_missing_threads(service)
         threads = service.list_threads()
         plans = [(plan, thread.id) for thread in threads for plan in service.list_plans(thread.id)
                  if plan.status == "confirmed"]
@@ -152,11 +201,40 @@ class CareerAPI:
             "resumes": [item.model_dump(mode="json") for item in service.list_resumes()],
             "jobs": [item.model_dump(mode="json") for item in service.list_jobs()],
             "threads": [item.model_dump(mode="json") for item in threads],
+            "deleted_thread_ids": [item.id for item in service.list_threads(include_deleted=True) if item.deleted_at is not None],
             "plans": [{**item.model_dump(mode="json"), "career_thread_id": thread_id}
                       for item, thread_id in plans],
             "tasks": [item.model_dump(mode="json") for item in tasks],
             "chat_available": availability,
         }
+
+    def _deletion_binding(self, session_key: str) -> tuple[CareerService, CareerThread] | None:
+        if self.sessions is None or not session_key.startswith("websocket:career-"):
+            return None
+        stored = self.sessions.read_session_metadata(session_key)
+        if stored is None:
+            return None
+        metadata = stored["metadata"]
+        thread_id = metadata.get("career_thread_id")
+        if not isinstance(thread_id, str):
+            return None
+        scope = self.workspaces.scope_for_session_key(session_key)
+        service, _ = self._resolve(_scope_ref(scope))
+        try:
+            thread = service.get_thread(thread_id)
+        except CareerNotFoundError:
+            return None
+        if thread.session_key == session_key and _matches_session(metadata, thread.id, scope):
+            return service, thread
+        return None
+
+    async def delete_session(self, session_key: str, delete: Callable[[], Awaitable[bool]]) -> bool:
+        async with self._lifecycle_lock:
+            binding = await asyncio.to_thread(self._deletion_binding, session_key)
+            deleted = await delete()
+            if deleted and binding is not None:
+                await asyncio.to_thread(binding[0].retire_threads, [binding[1].id])
+            return deleted
 
     def _mutate_record(self, action: str, payload: dict[str, object]) -> dict[str, object]:
         if action in {"career.resume.confirm", "career.job.confirm"}:
@@ -210,8 +288,13 @@ class CareerAPI:
             raise CareerNotFoundError("career_action_not_found")
         if action != "career.thread.create":
             return await asyncio.to_thread(self._mutate_record, action, payload)
+        async with self._lifecycle_lock:
+            return await self._create_thread(payload)
+
+    async def _create_thread(self, payload: dict[str, object]) -> dict[str, object]:
         request = _ThreadCreate.model_validate(payload)
         service, scope = await asyncio.to_thread(self._resolve, request.workspace_ref)
+        await asyncio.to_thread(self._retire_missing_threads, service)
         binding = json.dumps({
             "workspace_id": service.store.workspace_id,
             "resume": request.resume_version_id, "job": request.job_version_id,

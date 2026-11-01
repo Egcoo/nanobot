@@ -24,7 +24,7 @@ from nanobot.career.models import (
 from nanobot.config.paths import get_data_dir
 from nanobot.session.location import SessionLocation
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 _Record = TypeVar("_Record", bound=BaseModel)
 
 _SCHEMA = (
@@ -51,7 +51,7 @@ _SCHEMA = (
         id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, session_key TEXT NOT NULL UNIQUE,
         resume_version_id TEXT NOT NULL REFERENCES resume_versions(id),
         job_version_id TEXT NOT NULL REFERENCES job_versions(id),
-        conditions TEXT NOT NULL, created_at TEXT NOT NULL
+        conditions TEXT NOT NULL, created_at TEXT NOT NULL, deleted_at TEXT
     )""",
     """CREATE TABLE analysis_runs (
         id TEXT PRIMARY KEY,
@@ -151,11 +151,14 @@ class CareerStore:
             with db:
                 db.execute("BEGIN IMMEDIATE")
                 version = db.execute("PRAGMA user_version").fetchone()[0]
-                if version not in (0, SCHEMA_VERSION):
+                if version not in (0, 1, SCHEMA_VERSION):
                     raise ValueError(f"unsupported career schema_version: {version}")
                 if version == 0:
                     for statement in _SCHEMA:
                         db.execute(statement)
+                    db.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
+                elif version == 1:
+                    db.execute("ALTER TABLE career_threads ADD COLUMN deleted_at TEXT")
                     db.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
 
     @contextmanager
@@ -227,9 +230,12 @@ class CareerStore:
         )
 
     @staticmethod
-    def thread(db: sqlite3.Connection, thread_id: str) -> CareerThread:
+    def thread(db: sqlite3.Connection, thread_id: str, *, include_deleted: bool = False) -> CareerThread:
         row = db.execute("SELECT * FROM career_threads WHERE id = ?", (thread_id,)).fetchone()
-        return _parse(CareerThread, _required(row, "preparation thread"), "conditions")
+        record = _parse(CareerThread, _required(row, "preparation thread"), "conditions")
+        if record.deleted_at is not None and not include_deleted:
+            raise CareerNotFoundError("preparation thread has been removed")
+        return record
 
     @staticmethod
     def thread_for_session(db: sqlite3.Connection, session_key: str) -> CareerThread | None:
@@ -237,10 +243,15 @@ class CareerStore:
         return _parse(CareerThread, row, "conditions") if row is not None else None
 
     @staticmethod
-    def threads(db: sqlite3.Connection) -> list[CareerThread]:
+    def threads(db: sqlite3.Connection, *, include_deleted: bool = False) -> list[CareerThread]:
         return [_parse(CareerThread, row, "conditions") for row in db.execute(
-            "SELECT * FROM career_threads ORDER BY created_at, id",
+            "SELECT * FROM career_threads " + ("" if include_deleted else "WHERE deleted_at IS NULL ") + "ORDER BY created_at, id",
         )]
+
+    @staticmethod
+    def retire_thread(db: sqlite3.Connection, record: CareerThread) -> None:
+        assert record.deleted_at is not None
+        db.execute("UPDATE career_threads SET deleted_at = ? WHERE id = ?", (record.deleted_at.isoformat(), record.id))
 
     @staticmethod
     def add_thread(db: sqlite3.Connection, record: CareerThread) -> None:
@@ -257,6 +268,15 @@ class CareerStore:
             "SELECT * FROM analysis_runs WHERE career_thread_id = ? ORDER BY created_at, id",
             (thread_id,),
         )]
+
+    @staticmethod
+    def analysis_for_turn(db: sqlite3.Connection, thread_id: str, turn_id: str) -> AnalysisRun | None:
+        row = db.execute(
+            """SELECT * FROM analysis_runs WHERE career_thread_id = ?
+                AND json_extract(snapshot, '$.turn_id') = ? ORDER BY created_at LIMIT 1""",
+            (thread_id, turn_id),
+        ).fetchone()
+        return _parse(AnalysisRun, row, "snapshot", "usage") if row is not None else None
 
     @staticmethod
     def add_analysis(db: sqlite3.Connection, record: AnalysisRun) -> None:

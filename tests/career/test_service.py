@@ -30,6 +30,46 @@ def _successful_analysis(service: CareerService, thread: CareerThread) -> str:
     return analysis.id
 
 
+def test_retiring_a_preparation_preserves_shared_materials_history_and_completed_tasks(service: CareerService, thread: CareerThread):
+    old_id = _successful_analysis(service, thread)
+    original = service.get_analysis(old_id)
+    plan = service.propose_plan(old_id, [TaskInput(title="工程任务", action="整理一页项目", completion_criteria="一页完成")])
+    service.confirm_plan(plan.id)
+    task = service.list_tasks(plan.id)[0]
+    completed = service.update_task(task.id, status="completed", result="已完成")
+    pending = service.create_analysis(thread.id)
+    service.update_analysis(pending.id, status="running")
+    draft = service.propose_plan(pending.id, [TaskInput(title="未确认任务", action="待核对", completion_criteria="核对完成")])
+    service.retire_threads([thread.id])
+    service.retire_threads([thread.id])
+    assert service.list_threads() == []
+    assert service.get_thread(thread.id, include_deleted=True).deleted_at is not None
+    assert service.get_resume(thread.resume_version_id).status == "confirmed"
+    assert service.get_job(thread.job_version_id).status == "confirmed"
+    assert service.get_analysis(old_id) == original
+    assert service.get_analysis(pending.id).status == "cancelled"
+    assert service.get_plan(draft.id).status == "cancelled"
+    assert service.list_tasks(plan.id) == [completed]
+    with pytest.raises(CareerNotFoundError):
+        service.create_analysis(thread.id)
+    with pytest.raises(CareerNotFoundError):
+        service.confirm_plan(plan.id)
+    with pytest.raises(CareerNotFoundError):
+        service.update_task(task.id, status="pending")
+
+
+def test_reentering_deleted_materials_creates_one_fresh_preparation_without_restoring_old_history(service: CareerService, thread: CareerThread):
+    service.retire_threads([thread.id])
+    args = dict(session_key=thread.session_key, resume_version_id=thread.resume_version_id,
+                job_version_id=thread.job_version_id, conditions=thread.conditions)
+    fresh = service.create_thread(**args)
+    assert fresh.id != thread.id and fresh.session_key != thread.session_key
+    assert service.create_thread(**args) == fresh
+    assert service.list_threads() == [fresh]
+    assert len(service.list_threads(include_deleted=True)) == 2
+    assert fresh.conditions == thread.conditions
+
+
 def test_same_name_resumes_have_independent_identity_and_editable_drafts(
     service: CareerService,
 ) -> None:

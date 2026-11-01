@@ -217,39 +217,65 @@ class CareerService:
             job = self.store.job(db, job_version_id)
             if resume.status != "confirmed" or job.status != "confirmed":
                 raise CareerConflictError("preparation requires a confirmed resume and job version")
+            requested_conditions = conditions if conditions is not None else PersonalConditions()
+            original_key = session_key
+            existing = self.store.thread_for_session(db, session_key)
+            while existing is not None:
+                if (existing.resume_version_id, existing.job_version_id, existing.conditions) != (
+                    resume.id, job.id, requested_conditions,
+                ):
+                    raise CareerConflictError("this session is already bound; use a new preparation chat")
+                if existing.deleted_at is None:
+                    return existing
+                # A deleted preparation stays retired. Re-entering the same
+                # materials gets a fresh chat, with concurrent entry serialized.
+                session_key = f"{original_key}-{existing.id}"
+                existing = self.store.thread_for_session(db, session_key)
             record = CareerThread(
                 id=_id("thread"), workspace_id=self.store.workspace_id, session_key=session_key,
                 resume_version_id=resume.id, job_version_id=job.id,
-                conditions=conditions if conditions is not None else PersonalConditions(),
+                conditions=requested_conditions,
                 created_at=_now(),
             )
-            existing = self.store.thread_for_session(db, record.session_key)
-            if existing is not None:
-                if (existing.resume_version_id, existing.job_version_id, existing.conditions) != (
-                    record.resume_version_id, record.job_version_id, record.conditions,
-                ):
-                    raise CareerConflictError("this session is already bound; use a new preparation chat")
-                return existing
             self.store.add_thread(db, record)
             return record
 
-    def get_thread(self, thread_id: str) -> CareerThread:
+    def get_thread(self, thread_id: str, *, include_deleted: bool = False) -> CareerThread:
         with self.store.transaction() as db:
-            return self.store.thread(db, thread_id)
+            return self.store.thread(db, thread_id, include_deleted=include_deleted)
 
-    def list_threads(self) -> list[CareerThread]:
+    def list_threads(self, *, include_deleted: bool = False) -> list[CareerThread]:
         with self.store.transaction() as db:
-            return self.store.threads(db)
+            return self.store.threads(db, include_deleted=include_deleted)
 
-    def create_analysis(self, thread_id: str) -> AnalysisRun:
+    def retire_threads(self, thread_ids: Sequence[str]) -> None:
+        """Hide removed preparations while preserving their materials and history."""
+        with self.store.transaction(write=True) as db:
+            now = _now()
+            for thread_id in thread_ids:
+                thread = self.store.thread(db, thread_id, include_deleted=True)
+                if thread.deleted_at is not None:
+                    continue
+                self.store.retire_thread(db, _replace(thread, deleted_at=now))
+                for analysis in self.store.analyses(db, thread.id):
+                    if analysis.status in {"queued", "running"}:
+                        self.store.update_analysis(db, _replace(analysis, status="cancelled", updated_at=now))
+                    self.store.cancel_draft_plans(db, analysis.id)
+
+    def create_analysis(self, thread_id: str, *, turn_id: str | None = None) -> AnalysisRun:
         with self.store.transaction(write=True) as db:
             thread = self.store.thread(db, thread_id)
+            if turn_id is not None:
+                existing = self.store.analysis_for_turn(db, thread_id, turn_id)
+                if existing is not None:
+                    return existing
             now = _now()
             record = AnalysisRun(
                 id=_id("analysis"), career_thread_id=thread.id,
                 snapshot=AnalysisSnapshot(
                     resume=self.store.resume(db, thread.resume_version_id),
                     job=self.store.job(db, thread.job_version_id), conditions=thread.conditions,
+                    turn_id=turn_id,
                 ),
                 created_at=now, updated_at=now,
             )
@@ -259,6 +285,14 @@ class CareerService:
     def get_analysis(self, analysis_id: str) -> AnalysisRun:
         with self.store.transaction() as db:
             return self.store.analysis(db, analysis_id)
+
+    def cancel_pending_analyses(self, thread_id: str, *, before: datetime) -> None:
+        with self.store.transaction(write=True) as db:
+            self.store.thread(db, thread_id)
+            for current in self.store.analyses(db, thread_id):
+                if current.created_at <= before and current.status in {"queued", "running"}:
+                    self.store.update_analysis(db, _replace(current, status="cancelled", updated_at=_now()))
+                    self.store.cancel_draft_plans(db, current.id)
 
     def list_analyses(self, thread_id: str) -> list[AnalysisRun]:
         with self.store.transaction() as db:
@@ -293,6 +327,7 @@ class CareerService:
     def propose_plan(self, analysis_id: str, tasks: Sequence[TaskInput]) -> PreparationPlan:
         with self.store.transaction(write=True) as db:
             analysis = self.store.analysis(db, analysis_id)
+            self.store.thread(db, analysis.career_thread_id)
             if analysis.status not in {"running", "succeeded"}:
                 raise CareerConflictError("a plan draft requires a running or successful bound analysis")
             record = PreparationPlan(
@@ -317,6 +352,8 @@ class CareerService:
         selection = _TASK_LIST.validate_python(tuple(tasks)) if tasks is not None else None
         with self.store.transaction(write=True) as db:
             current = self.store.plan(db, plan_id)
+            analysis = self.store.analysis(db, current.analysis_id)
+            self.store.thread(db, analysis.career_thread_id)
             if current.status == "confirmed":
                 if selection is not None:
                     saved = tuple(TaskInput(
@@ -327,7 +364,6 @@ class CareerService:
                 return current
             if current.status == "cancelled":
                 raise CareerConflictError("a cancelled plan cannot be confirmed")
-            analysis = self.store.analysis(db, current.analysis_id)
             if analysis.status != "succeeded":
                 raise CareerConflictError("wait for a successful analysis before confirming its plan")
             now = _now()
@@ -362,6 +398,9 @@ class CareerService:
     ) -> PreparationTask:
         with self.store.transaction(write=True) as db:
             current = self.store.task(db, task_id)
+            plan = self.store.plan(db, current.plan_id)
+            analysis = self.store.analysis(db, plan.analysis_id)
+            self.store.thread(db, analysis.career_thread_id)
             record = _replace(
                 current, status=status, result=result if result is not None else current.result,
                 updated_at=_now(),

@@ -1222,6 +1222,7 @@ class WebSocketChannel(BaseChannel):
         )
 
     async def send(self, msg: OutboundMessage) -> None:
+        await self.gateway.http.career_turns.record_output(msg)
         await self._outbound.send(msg)
 
     async def send_projected_message(
@@ -1391,6 +1392,7 @@ class WebSocketChannel(BaseChannel):
         meta = metadata or {}
         stream_key = (chat_id, str(stream_id or ""))
         completed_text: str | None = None
+        full_text = delta
         if stream_end:
             body: dict[str, Any] = {"event": "stream_end", "chat_id": chat_id}
             buffered = (
@@ -1425,6 +1427,10 @@ class WebSocketChannel(BaseChannel):
             metadata=meta,
             phase="answer",
             include_source=True,
+        )
+        await self.gateway.http.career_turns.record_stream(
+            chat_id, full_text if stream_end else delta, meta,
+            stream_id=stream_id, stream_end=stream_end,
         )
         raw = json.dumps(body, ensure_ascii=False)
         if not conns:

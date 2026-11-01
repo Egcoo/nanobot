@@ -6,19 +6,23 @@ import asyncio
 import hashlib
 import json
 import re
+import sqlite3
 import time
 import uuid
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import Any, Protocol, cast
 
 from loguru import logger
 from websockets.asyncio.server import ServerConnection
 
 from nanobot.bus.events import INBOUND_META_LOCAL_MEDIA, INBOUND_META_USER_SHELL
+from nanobot.career.models import CareerConflictError, CareerNotFoundError
 from nanobot.channels.websocket.attachment_policy import validate_attachment_batch
 from nanobot.channels.websocket.attachment_store import AttachmentUploadError
 from nanobot.command.builtin import USER_SHELL_COMMAND, builtin_command_starts_agent_turn
+from nanobot.runtime_admission import RuntimeMaintenanceError
 from nanobot.runtime_context import (
     RUNTIME_CONTEXT_INPUT_META,
     WEBUI_QUOTE_METADATA,
@@ -41,6 +45,7 @@ from nanobot.session.webui_turns import (
 from nanobot.utils.helpers import safe_filename
 from nanobot.utils.prompt_templates import render_template
 from nanobot.webui.attachments import inspect_local_attachment
+from nanobot.webui.career_turns import CAREER_TURN_METADATA, PreparedCareerTurn
 from nanobot.webui.cli_apps_api import normalize_cli_app_mentions
 from nanobot.webui.file_preview import (
     WebUIFilePreviewError,
@@ -489,10 +494,15 @@ class WebUICommandRouter:
         envelope: dict[str, Any],
     ) -> None:
         chat_id, turn_id = envelope.get("chat_id"), envelope.get("turn_id")
-        if not isinstance(chat_id, str) or not isinstance(turn_id, str) or not turn_id:
+        if isinstance(chat_id, str) and chat_id.startswith("career-"):
+            # Snapshot preparation awaits storage. A stop without a client nonce
+            # must not overtake the question it is meant to cancel during admission.
+            key = (chat_id, "")
+        elif isinstance(chat_id, str) and isinstance(turn_id, str) and turn_id:
+            key = (chat_id, turn_id)
+        else:
             await self._dispatch_message_once(connection, client_id, envelope)
             return
-        key = (chat_id, turn_id)
         lock, users = self._message_locks.get(key, (asyncio.Lock(), 0))
         self._message_locks[key] = (lock, users + 1)
         try:
@@ -753,6 +763,48 @@ class WebUICommandRouter:
                 "websocket", chat_id, unified_session=self.gateway.unified_session,
             )
         )
+        career_turn: PreparedCareerTurn | None = None
+        career_bound = False
+        career_stop_at = datetime.now(timezone.utc) if content.strip().lower() == "/stop" else None
+        if trusted_webui:
+            try:
+                self.gateway.http.bus.admission.check()
+                career_binding = await asyncio.to_thread(
+                    self.gateway.http.career.session_binding, chat_id, scope,
+                )
+                if career_binding is not None:
+                    career_bound = True
+                    execution_session_key = admission_session_key
+                    if not is_user_shell and builtin_command_starts_agent_turn(content):
+                        career_turn = await asyncio.to_thread(
+                            self.gateway.http.career_turns.prepare, chat_id, turn_id, scope,
+                        )
+                        if career_turn is not None:
+                            if envelope.get("side_channel") is True or envelope.get("continue_active_turn") is True:
+                                await self.gateway.http.career_turns.reject(career_turn)
+                                raise CareerConflictError("career_parallel_input_unsupported")
+                            metadata[CAREER_TURN_METADATA] = dict(career_turn.reference)
+            except RuntimeMaintenanceError:
+                if queued_owner is not None:
+                    clear_websocket_turn_if_current(chat_id, queued_owner)
+                await self._transport.webui_send_event(
+                    connection, "error", detail="message_rejected", reason="The gateway is paused for maintenance.", **rejection_fields,
+                )
+                return
+            except (CareerConflictError, CareerNotFoundError, ValueError):
+                if queued_owner is not None:
+                    clear_websocket_turn_if_current(chat_id, queued_owner)
+                await self._transport.webui_send_event(
+                    connection, "error", detail="career_context_rejected", **rejection_fields,
+                )
+                return
+            except (OSError, sqlite3.Error):
+                if queued_owner is not None:
+                    clear_websocket_turn_if_current(chat_id, queued_owner)
+                await self._transport.webui_send_event(
+                    connection, "error", detail="career_context_unavailable", **rejection_fields,
+                )
+                return
         session_generation: str | None = None
         session_created = False
         execution_generation: str | None = None
@@ -769,6 +821,8 @@ class WebUICommandRouter:
                         else None
                     ),
                 )
+                if career_bound and session_created:
+                    raise CareerConflictError("career_session_conflict")
                 execution_generation = session_generation
                 if (
                     execution_session_key != admission_session_key
@@ -794,7 +848,7 @@ class WebUICommandRouter:
                     session_mentions=session_mentions or None,
                 )
             if trusted_webui:
-                context_blocks: list[RuntimeContextBlock] = []
+                context_blocks: list[RuntimeContextBlock] = list(career_turn.blocks) if career_turn else []
                 if not is_user_shell and envelope.get("intent") == "create_automation":
                     context_blocks.append(RuntimeContextBlock(
                         source="webui_automation_creation",
@@ -819,23 +873,28 @@ class WebUICommandRouter:
                 is_dm=False,
                 session_key=(
                     execution_session_key
-                    if temporary_policy is not None
+                    if career_bound or temporary_policy is not None
                     or execution_session_key != admission_session_key
                     else None
                 ),
                 require_existing_session=(
-                    temporary_policy.require_existing_session
+                    True if career_bound else temporary_policy.require_existing_session
                     if temporary_policy is not None
                     else False
                 ),
                 session_generation=execution_generation,
             )
             accepted = True
+            if career_bound and career_stop_at is not None:
+                await self.gateway.http.career_turns.cancel(chat_id, scope, career_stop_at)
+                await self._transport.send_session_updated(chat_id, scope="metadata")
             if turn_id:
                 self._accepted_messages[(chat_id, turn_id)] = time.monotonic() + 600
                 if len(self._accepted_messages) > 1024:
                     del self._accepted_messages[next(iter(self._accepted_messages))]
         except BaseException:
+            if career_turn is not None:
+                await self.gateway.http.career_turns.reject(career_turn)
             await self._workspaces.rollback_scope_admission(
                 execution_session_key,
                 execution_generation,
@@ -1167,6 +1226,10 @@ class WebUICommandRouter:
                             "sidebar_state_updated",
                             state=result,
                         )
+                    if action == "session.delete" and isinstance(result, dict) and cast(dict[str, object], result).get("deleted") is True:
+                        session_key = payload.get("key")
+                        if isinstance(session_key, str) and session_key.startswith("websocket:"):
+                            await self._transport.send_session_updated(session_key.removeprefix("websocket:"), scope="metadata")
                     return WebUIRequestResult(result=result)
                 return WebUIRequestResult(
                     status=status,

@@ -45,6 +45,7 @@ from nanobot.triggers.local_types import LocalTrigger
 from nanobot.webui.automation_chats import AutomationChat, automation_chats
 from nanobot.webui.automation_results import cron_run_response, trigger_run_response
 from nanobot.webui.career_api import CAREER_MUTATIONS, CareerAPI
+from nanobot.webui.career_turns import CareerTurns
 from nanobot.webui.file_preview import (
     WebUIFilePreviewError,
     file_preview_availability_payload,
@@ -413,6 +414,7 @@ class GatewayHTTPHandler:
         self.career = CareerAPI(
             sessions=session_manager, workspaces=workspaces, data_dir=settings.config.path.parent,
         )
+        self.career_turns = CareerTurns(self.career)
         self.settings = settings
         from nanobot.webui.remote_instances import RemoteInstances
 
@@ -594,7 +596,7 @@ class GatewayHTTPHandler:
         request: WsRequest,
         got: str,
     ) -> Any | None:
-        if got == "/api/career/workspaces" or got == "/api/career" or got.startswith("/api/career/mutate/"):
+        if got in {"/api/career/workspaces", "/api/career", "/api/career/conversation"} or got.startswith("/api/career/mutate/"):
             return await self._dispatch_career(request, got)
         if got == "/api/remote-instances" or got.startswith("/api/remote-instances/"):
             return await self._dispatch_remote_instances(connection, request, got)
@@ -670,7 +672,15 @@ class GatewayHTTPHandler:
                 return _http_json_response(await asyncio.to_thread(self.career.catalog), extra_headers=_NO_STORE_HEADERS)
             if path == "/api/career":
                 reference = _query_first(_parse_query(request.path), "workspace_ref") or ""
-                return _http_json_response(await asyncio.to_thread(self.career.state, reference), extra_headers=_NO_STORE_HEADERS)
+                return _http_json_response(await self.career.state(reference), extra_headers=_NO_STORE_HEADERS)
+            if path == "/api/career/conversation":
+                query = _parse_query(request.path)
+                reference = _query_first(query, "workspace_ref") or ""
+                thread_id = _query_first(query, "thread_id") or ""
+                return _http_json_response(
+                    await asyncio.to_thread(self.career_turns.conversation, reference, thread_id),
+                    extra_headers=_NO_STORE_HEADERS,
+                )
             action = path.removeprefix("/api/career/mutate/")
             return _http_json_response(await self.career.mutate(action, _mutation_payload(request) or {}))
         except ValidationError:
@@ -1432,13 +1442,20 @@ class GatewayHTTPHandler:
                         await asyncio.to_thread(self.local_trigger_store.delete, job.id)
                 elif self.cron_service is not None:
                     self.cron_service.remove_job(job.id)
-        draft_deleted = self.workspaces.discard_draft_scope(decoded_key)
-        if self.discard_session is not None:
-            await self.discard_session(decoded_key)
-        elif self.subagent_manager is not None:
-            await self.subagent_manager.cancel_by_session(decoded_key)
-        session_deleted = await self.session_manager.state.delete(decoded_key)
-        return _http_json_response({"deleted": bool(draft_deleted or session_deleted)})
+        async def delete() -> bool:
+            draft_deleted = self.workspaces.discard_draft_scope(decoded_key)
+            if self.discard_session is not None:
+                await self.discard_session(decoded_key)
+            elif self.subagent_manager is not None:
+                await self.subagent_manager.cancel_by_session(decoded_key)
+            assert self.session_manager is not None
+            session_deleted = await self.session_manager.state.delete(decoded_key)
+            return bool(draft_deleted or session_deleted)
+
+        deleted = await self.career.delete_session(decoded_key, delete)
+        if deleted:
+            self.career_turns.forget_session(decoded_key)
+        return _http_json_response({"deleted": deleted})
 
     # -- Automation routes --------------------------------------------------
 
